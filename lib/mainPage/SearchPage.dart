@@ -64,9 +64,14 @@ class SearchState extends State<StatefulWidget>{
                     margin: EdgeInsets.only(left: 16.0),
                   ),
                   //cancel btn
-                  Container(
-                    child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
-                    margin: EdgeInsets.only(right: 16.0),
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.pushNamed(context,'/home');
+                    },
+                    child: Container(
+                      child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
+                      margin: EdgeInsets.only(right: 16.0),
+                    ),
                   ),
 
                 ],
