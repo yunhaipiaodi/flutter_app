@@ -6,8 +6,13 @@ import 'package:http/http.dart';
 
 
 class TabItemView extends StatefulWidget{
+
+  int type = 0;
+
   @override
-  TabItemState createState()  => TabItemState();
+  TabItemState createState()  => TabItemState(type);
+
+  TabItemView(this.type);
 
 }
 
@@ -15,6 +20,9 @@ class TabItemState extends State<TabItemView>{
 
   List<TabItemData> _dataSource = List();
 
+  int type = 0;
+
+  TabItemState(this.type);
 
   Widget _getItemView(TabItemData data){
     return Card(
@@ -41,7 +49,7 @@ class TabItemState extends State<TabItemView>{
   }
 
   Future _getFoods() async{
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_foods.php";
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_foods_by_type.php?type=" + type.toString();
     final response = await get(url);
     if(response.statusCode == 200){
       return json.decode(response.body);
@@ -64,6 +72,11 @@ class TabItemState extends State<TabItemView>{
               );
             }
             List datas = snapshot.data;
+            if(datas.length == 0){
+              return Center(
+                child: Text("当前没有数据"),
+              );
+            }
             datas.forEach((jsonObject){
               _dataSource.add(TabItemData.fromJson(jsonObject));
             });

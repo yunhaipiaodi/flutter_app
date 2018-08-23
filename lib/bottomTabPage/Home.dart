@@ -59,11 +59,11 @@ class Home extends StatelessWidget{
           ]),
         ),
         body: TabBarView(children:[
-          TabItemView(),
-          TabItemView(),
-          TabItemView(),
-          TabItemView(),
-          TabItemView(),
+          TabItemView(1),
+          TabItemView(2),
+          TabItemView(3),
+          TabItemView(4),
+          TabItemView(5),
         ]),
 
       ),);
