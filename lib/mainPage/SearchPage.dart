@@ -1,85 +1,152 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_app/tools/flutter_statusbarcolor.dart';
-import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SearchPage extends StatefulWidget{
   @override
   // ignore: missing_return
   SearchState createState() => SearchState();
-
-
 }
 
 class SearchState extends State<StatefulWidget>{
+
+  String _searchKeyword = "";
+
   @override
   void initState(){
     super.initState();
 
     //change state bar color
-
   }
 
+
+  //create search tag
   Widget _getFoodItem(String foodName,bool highLight){
-    return Container(
-      height: 20.0,
-      child: Text(foodName,style: TextStyle(color: highLight?Colors.white:Colors.black),),
-      decoration: BoxDecoration(
-        color: highLight?Colors.blue:Color.fromARGB(255, 246, 246,246),
-        borderRadius: BorderRadius.all(Radius.circular(10.0))
+    return GestureDetector(
+      onTap: (){
+        setState(() {
+          _searchKeyword = foodName;
+        });
+      },
+      child: Container(
+        height: 20.0,
+        child: Text(foodName,style: TextStyle(color: highLight?Colors.white:Colors.black),),
+        decoration: BoxDecoration(
+            color: highLight?Colors.blue:Color.fromARGB(255, 246, 246,246),
+            borderRadius: BorderRadius.all(Radius.circular(10.0))
+        ),
+        padding: EdgeInsets.only(left: 10.0,right: 10.0),
+        margin: EdgeInsets.only(right: 8.0,top:8.0),
       ),
-      padding: EdgeInsets.only(left: 10.0,right: 10.0),
-      margin: EdgeInsets.only(right: 8.0,top:8.0),
     );
   }
 
+  Future _getCommendKeywords() async{
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_commend_search.php";
+    var response = await http.get(url);
+    if(response.statusCode == 200){
+      return json.decode(response.body);
+    }else{
+      throw Exception("fails to get commend keywords");
+    }
+  }
+
+  Future _searchCuisine(String keyword) async{
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/search_cuisine.php?keyword=" + keyword;
+    var response = await http.get(url);
+    if(response.statusCode == 200){
+      return json.decode(response.body);
+    }else{
+      throw Exception("fails to get commend keywords");
+    }
+  }
+
+  List<Widget> _showCommendKeywords(List<String> keywords){
+
+    List<Widget> widgets = List();
+    for(int i = 0;i<keywords.length;i++){
+      if(i<3){
+        widgets.add(_getFoodItem(keywords[i],true));
+      }else{
+        widgets.add(_getFoodItem(keywords[i],false));
+      }
+    }
+    return widgets;
+  }
+
+  Widget _getItemView(TabItemData data){
+    return Card(
+      child: Column(
+        children: <Widget>[
+          Image.network(data.foodImageUrl),
+          Row(children: <Widget>[
+            Container(
+              child: Column(children: <Widget>[
+                Text(data.foodTitle,style: TextStyle(fontSize: 16.0),textAlign: TextAlign.left,),
+                Text("￥" + data.foodPrice,style: TextStyle(color: Color.fromARGB(255, 38, 200, 139),fontSize: 12.0),textAlign: TextAlign.left),
+              ],
+                crossAxisAlignment: CrossAxisAlignment.start,),
+              margin: EdgeInsets.only(left: 16.0),
+            ),
+
+            IconButton(icon: Icon(Icons.shopping_cart,color: Colors.blue,),onPressed: null,),
+          ],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-
-
-    return Scaffold(
+    if(_searchKeyword.isEmpty){
+      return Scaffold(
         body: Container(child: Column(
           children: <Widget>[
             //top bar
             Container(
               child:Row(children: <Widget>[
-                  //search bar
-                  Container(
-                    width:280.0,
-                    height:36.0,
-                    child: Row(children: <Widget>[
-                      IconButton(icon:Icon(Icons.search),onPressed: null,),
-                      Expanded(child: TextField(
-                        decoration: InputDecoration.collapsed(hintText: '搜索你喜欢的美食吧!',
-                          border: InputBorder.none,),
-                      ),
-                      ),
-                    ],
+                //search bar
+                Container(
+                  width:280.0,
+                  height:36.0,
+                  child: Row(children: <Widget>[
+                    IconButton(icon:Icon(Icons.search),onPressed: null,),
+                    Expanded(child: TextField(
+                      decoration: InputDecoration.collapsed(hintText: '搜索你喜欢的美食吧!',
+                        border: InputBorder.none,),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(18.0)),
                     ),
-                    margin: EdgeInsets.only(left: 16.0),
+                  ],
                   ),
-                  //cancel btn
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.pushNamed(context,'/home');
-                    },
-                    child: Container(
-                      child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
-                      margin: EdgeInsets.only(right: 16.0),
-                    ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(18.0)),
                   ),
+                  margin: EdgeInsets.only(left: 16.0),
+                ),
+                //cancel btn
+                GestureDetector(
+                  onTap: (){
+                    Navigator.pushNamed(context,'/home');
+                  },
+                  child: Container(
+                    child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
+                    margin: EdgeInsets.only(right: 16.0),
+                  ),
+                ),
 
-                ],
+              ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
               ),
               height: AppBar().preferredSize.height,
               color: Colors.blue,
             ),
+
 
             //commend food title
             Container(
@@ -95,34 +162,37 @@ class SearchState extends State<StatefulWidget>{
               margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
             ),
 
-            //commend foods
-            Container(
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      _getFoodItem("满汉全席",true),
-                      _getFoodItem("满汉全席",true),
-                      _getFoodItem("满汉全席",true),
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      _getFoodItem("夜宵",false),
-                      _getFoodItem("红烧肉",false),
-                      _getFoodItem("川味水煮鱼",false),
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      _getFoodItem("家常粉蒸排骨",false),
-                      _getFoodItem("西班牙蒜蓉大虾",false),
-                    ],
-                  ),
-                ],
-              ),
-              margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+            //get commend foods keywords from network
+            FutureBuilder(
+              future:  _getCommendKeywords(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                //get commend keywords list
+                if(snapshot.hasData){
+                  List datas = snapshot.data;
+                  if(datas.length == 0){
+                    return Center(
+                      child: Text("抱歉,没有找到推荐美食!"),
+                    );
+                  }
+                  List<String> keywords = List();
+                  datas.forEach((object){
+                    keywords.add(object["commend_keyword"]);
+                  });
+                  return Container(
+                    child: Wrap(
+                      children: _showCommendKeywords(keywords),
+                    ),
+                    margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+                    alignment: Alignment.topLeft,
+                  );
+                }else{
+                return Center(
+                child: Text("正在查找中..."),
+                );
+                }
+              },
             ),
+
 
             //history food title
             Container(
@@ -162,6 +232,104 @@ class SearchState extends State<StatefulWidget>{
         ),
         backgroundColor: Colors.blue,
       );
+    }else{
+      return Scaffold(
+        body: Container(child: Column(
+          children: <Widget>[
+            //top bar
+            Container(
+              child:Row(children: <Widget>[
+                //search bar
+                Container(
+                  width:280.0,
+                  height:36.0,
+                  child: Row(children: <Widget>[
+                    IconButton(icon:Icon(Icons.search),onPressed: null,),
+                    Expanded(child: TextFormField(
+                      decoration: InputDecoration.collapsed(hintText: '搜索你喜欢的美食吧!',
+                                                            border: InputBorder.none,),
+                      initialValue: _searchKeyword,
+                    ),
+                    ),
+                  ],
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                  ),
+                  margin: EdgeInsets.only(left: 16.0),
+                ),
+                //cancel btn
+                GestureDetector(
+                  onTap: (){
+                    Navigator.pushNamed(context,'/home');
+                  },
+                  child: Container(
+                    child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
+                    margin: EdgeInsets.only(right: 16.0),
+                  ),
+                ),
+
+              ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              height: AppBar().preferredSize.height,
+              color: Colors.blue,
+            ),
+
+            //search result list
+            FutureBuilder(
+              future: _searchCuisine(_searchKeyword),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if(snapshot.hasData){
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("没有找到你想要的东西!"),
+                  );
+                }
+                List<TabItemData> _dataSource = List();
+                datas.forEach((jsonObject){
+                  _dataSource.add(TabItemData.fromJson(jsonObject));
+                });
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: _dataSource.length,
+                    itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
+                  ),
+                );
+              }else{
+                return Center(
+                  child: Text("正在查找中..."),
+                );
+              }
+              },
+            ),
+          ],
+
+        ),
+          margin: EdgeInsets.only(top:MediaQuery.of(context).padding.top,),
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.blue,
+      );
+    }
+
   }
+
+}
+
+class TabItemData{
+
+  String foodImageUrl;
+  String foodTitle;
+  String foodPrice;
+
+  TabItemData(@required this.foodImageUrl,@required this.foodTitle,@required this.foodPrice);
+
+  TabItemData.fromJson(Map<String,dynamic> json)
+      :foodImageUrl=json["image_url"],
+        foodTitle = json["name"],
+        foodPrice = json["price"];
 
 }
