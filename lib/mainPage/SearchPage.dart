@@ -13,14 +13,28 @@ class SearchPage extends StatefulWidget{
 class SearchState extends State<StatefulWidget>{
 
   String _searchKeyword = "";
+  bool _searchBarFocus = false;
+  TextEditingController controller = TextEditingController();
+  FocusNode _focusNode = FocusNode();
 
   @override
   void initState(){
     super.initState();
-
     //change state bar color
+    _focusNode.addListener(_onFocusChange);
   }
 
+  @override
+  void dispose(){
+    super.dispose();
+    _focusNode.removeListener(_onFocusChange);
+  }
+
+  _onFocusChange(){
+    setState(() {
+      _searchBarFocus = true;
+    });
+  }
 
   //create search tag
   Widget _getFoodItem(String foodName,bool highLight){
@@ -28,6 +42,7 @@ class SearchState extends State<StatefulWidget>{
       onTap: (){
         setState(() {
           _searchKeyword = foodName;
+          controller.text = foodName;
         });
       },
       child: Container(
@@ -87,7 +102,7 @@ class SearchState extends State<StatefulWidget>{
                 Text(data.foodTitle,style: TextStyle(fontSize: 16.0),textAlign: TextAlign.left,),
                 Text("￥" + data.foodPrice,style: TextStyle(color: Color.fromARGB(255, 38, 200, 139),fontSize: 12.0),textAlign: TextAlign.left),
               ],
-                crossAxisAlignment: CrossAxisAlignment.start,),
+              crossAxisAlignment: CrossAxisAlignment.start,),
               margin: EdgeInsets.only(left: 16.0),
             ),
 
@@ -100,220 +115,247 @@ class SearchState extends State<StatefulWidget>{
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    if(_searchKeyword.isEmpty){
-      return Scaffold(
-        body: Container(child: Column(
-          children: <Widget>[
-            //top bar
-            Container(
-              child:Row(children: <Widget>[
-                //search bar
-                Container(
-                  width:280.0,
-                  height:36.0,
-                  child: Row(children: <Widget>[
-                    IconButton(icon:Icon(Icons.search),onPressed: null,),
-                    Expanded(child: TextField(
-                      decoration: InputDecoration.collapsed(hintText: '搜索你喜欢的美食吧!',
-                        border: InputBorder.none,),
-                    ),
-                    ),
-                  ],
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(18.0)),
-                  ),
-                  margin: EdgeInsets.only(left: 16.0),
-                ),
-                //cancel btn
-                GestureDetector(
-                  onTap: (){
-                    Navigator.pushNamed(context,'/home');
-                  },
-                  child: Container(
-                    child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
-                    margin: EdgeInsets.only(right: 16.0),
-                  ),
-                ),
-
-              ],
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              ),
-              height: AppBar().preferredSize.height,
-              color: Colors.blue,
-            ),
-
-
-            //commend food title
-            Container(
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Text("推荐美食",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
-                    ],
-                  ),
-                ],
-              ),
-              margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
-            ),
-
-            //get commend foods keywords from network
-            FutureBuilder(
-              future:  _getCommendKeywords(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                //get commend keywords list
-                if(snapshot.hasData){
-                  List datas = snapshot.data;
-                  if(datas.length == 0){
-                    return Center(
-                      child: Text("抱歉,没有找到推荐美食!"),
-                    );
-                  }
-                  List<String> keywords = List();
-                  datas.forEach((object){
-                    keywords.add(object["commend_keyword"]);
-                  });
-                  return Container(
-                    child: Wrap(
-                      children: _showCommendKeywords(keywords),
-                    ),
-                    margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
-                    alignment: Alignment.topLeft,
-                  );
-                }else{
-                return Center(
-                child: Text("正在查找中..."),
-                );
-                }
-              },
-            ),
-
-
-            //history food title
-            Container(
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Text("历史搜索",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
-                      IconButton(icon: Icon(Icons.delete),onPressed: null,),
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  ),
-                ],
-              ),
-              margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
-            ),
-
-            //history
-            Container(
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      _getFoodItem("萝卜牛腩",false),
-                      _getFoodItem("鲍汁排骨饭",false),
-                    ],
-                  ),
-                ],
-              ),
-              margin: EdgeInsets.only(left: 16.0,right: 16.0),
-            ),
-          ],
-
+  Widget _getSearchAutoList(List<String> titles){
+    return ListView.builder(
+      itemCount: titles.length,
+      itemBuilder: (buildContext,index) => Container(
+        child: Text(titles[index]),
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color:Colors.grey))
         ),
-          margin: EdgeInsets.only(top:MediaQuery.of(context).padding.top,),
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.blue,
-      );
-    }else{
-      return Scaffold(
-        body: Container(child: Column(
-          children: <Widget>[
-            //top bar
-            Container(
-              child:Row(children: <Widget>[
-                //search bar
-                Container(
-                  width:280.0,
-                  height:36.0,
-                  child: Row(children: <Widget>[
-                    IconButton(icon:Icon(Icons.search),onPressed: null,),
-                    Expanded(child: TextFormField(
-                      decoration: InputDecoration.collapsed(hintText: '搜索你喜欢的美食吧!',
-                                                            border: InputBorder.none,),
-                      initialValue: _searchKeyword,
-                    ),
-                    ),
-                  ],
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(18.0)),
-                  ),
-                  margin: EdgeInsets.only(left: 16.0),
-                ),
-                //cancel btn
-                GestureDetector(
-                  onTap: (){
-                    Navigator.pushNamed(context,'/home');
-                  },
-                  child: Container(
-                    child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
-                    margin: EdgeInsets.only(right: 16.0),
-                  ),
-                ),
+      ),
+    );
+  }
 
-              ],
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              ),
-              height: AppBar().preferredSize.height,
-              color: Colors.blue,
-            ),
-
-            //search result list
-            FutureBuilder(
-              future: _searchCuisine(_searchKeyword),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
+  /*Widget _getSearchList(bool _searchBarFocus){
+    if(_searchBarFocus){
+      if(_searchKeyword.isEmpty){
+        return FutureBuilder(
+            future: _getCommendKeywords(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
               if(snapshot.hasData){
                 List datas = snapshot.data;
                 if(datas.length == 0){
                   return Center(
-                    child: Text("没有找到你想要的东西!"),
+                    child: Text("抱歉,没有找到推荐美食!"),
                   );
                 }
-                List<TabItemData> _dataSource = List();
-                datas.forEach((jsonObject){
-                  _dataSource.add(TabItemData.fromJson(jsonObject));
+                List<String> keywords = List();
+                datas.forEach((object){
+                  keywords.add(object["commend_keyword"]);
                 });
-                return Expanded(
-                  child: ListView.builder(
-                    itemCount: _dataSource.length,
-                    itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
-                  ),
-                );
+                return _getSearchAutoList(keywords);
               }else{
                 return Center(
                   child: Text("正在查找中..."),
                 );
               }
-              },
-            ),
-          ],
+            },
+        );
+      }else{
+        return FutureBuilder(
+          future: _getCommendKeywords(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if(snapshot.hasData){
+              List datas = snapshot.data;
+              if(datas.length == 0){
+                return Center(
+                  child: Text("抱歉,没有找到推荐美食!"),
+                );
+              }
+              List<String> keywords = List();
+              datas.forEach((object){
+                keywords.add(object["commend_keyword"]);
+              });
+              return _getSearchAutoList(keywords);
+            }else{
+              return Center(
+                child: Text("正在查找中..."),
+              );
+            }
+          },
+        );
+      }
+    }else{
+      //return null
+      return Container();
+    }
+  }*/
 
+  //get search body
+  Widget _getSearchBody(bool isKeywordEmpty){
+    if(_searchKeyword.isEmpty){
+      return Column(children: <Widget>[
+        //commend food title
+        Container(
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text("推荐美食",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
+                ],
+              ),
+            ],
+          ),
+          margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
         ),
-          margin: EdgeInsets.only(top:MediaQuery.of(context).padding.top,),
-          color: Colors.white,
+
+        //get commend foods keywords from network
+        FutureBuilder(
+          future:  _getCommendKeywords(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            //get commend keywords list
+            if(snapshot.hasData){
+              List datas = snapshot.data;
+              if(datas.length == 0){
+                return Center(
+                  child: Text("抱歉,没有找到推荐美食!"),
+                );
+              }
+              List<String> keywords = List();
+              datas.forEach((object){
+                keywords.add(object["commend_keyword"]);
+              });
+              return Container(
+                child: Wrap(
+                  children: _showCommendKeywords(keywords),
+                ),
+                margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+                alignment: Alignment.topLeft,
+              );
+            }else{
+              return Center(
+                child: Text("正在查找中..."),
+              );
+            }
+          },
         ),
-        backgroundColor: Colors.blue,
+
+        //history food title
+        Container(
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text("历史搜索",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
+                  IconButton(icon: Icon(Icons.delete),onPressed: null,),
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+            ],
+          ),
+          margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
+        ),
+
+        //history
+        Container(
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  _getFoodItem("萝卜牛腩",false),
+                  _getFoodItem("鲍汁排骨饭",false),
+                ],
+              ),
+            ],
+          ),
+          margin: EdgeInsets.only(left: 16.0,right: 16.0),
+        ),
+      ],);
+    }else{
+      return FutureBuilder(
+        future: _searchCuisine(_searchKeyword),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.hasData){
+            List datas = snapshot.data;
+            if(datas.length == 0){
+              return Center(
+                child: Text("没有找到你想要的东西!"),
+              );
+            }
+            List<TabItemData> _dataSource = List();
+            datas.forEach((jsonObject){
+              _dataSource.add(TabItemData.fromJson(jsonObject));
+            });
+            return Expanded(
+              child: ListView.builder(
+                itemCount: _dataSource.length,
+                itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
+              ),
+            );
+          }else{
+            return Center(
+              child: Text("正在查找中..."),
+            );
+          }
+        },
       );
     }
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Scaffold(
+      body: Container(child: Column(
+        children: <Widget>[
+          //top bar
+          Container(
+            child:Row(children: <Widget>[
+              //search bar
+              Container(
+                width:280.0,
+                height:36.0,
+                child: Row(children: <Widget>[
+                  IconButton(icon:Icon(Icons.search),onPressed: null,),
+                  Expanded(child: TextField(
+                    decoration: InputDecoration.collapsed(
+                      hintText: '搜索你喜欢的美食吧!',
+                      border: InputBorder.none,
+                    ),
+                    controller: controller,
+                    focusNode: _focusNode,
+                    onChanged: (keyword){
+                      print("focus in input:"+ keyword);
+                    },
+                  ),
+                  ),
+                ],
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                ),
+                margin: EdgeInsets.only(left: 16.0),
+              ),
+              //cancel btn
+              GestureDetector(
+                onTap: (){
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
+                  margin: EdgeInsets.only(right: 16.0),
+                ),
+              ),
+            ],
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            height: AppBar().preferredSize.height,
+            color: Colors.blue,
+          ),
+
+          _getSearchBody(_searchKeyword.isEmpty),
+        ],
+
+      ),
+        margin: EdgeInsets.only(top:MediaQuery.of(context).padding.top,),
+        color: Colors.white,
+      ),
+      backgroundColor: Colors.blue,
+    );
 
   }
 

@@ -5,38 +5,6 @@ class Home extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    List<TabItemData> _getDataSource(){
-      List<TabItemData> dataSource = List<TabItemData>();
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      dataSource.add(TabItemData(
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1534305231&di=d562abad15ca34cb737899812041ac44&imgtype=jpg&er=1&src=http%3A%2F%2Fimg1.gtimg.com%2Fcq%2Fpics%2Fhv1%2F145%2F134%2F2188%2F142309015.jpg",
-          "芝士鱿鱼",
-          "25"));
-      return dataSource;
-    }
 
     return DefaultTabController(
         length: 5,

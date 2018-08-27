@@ -5,27 +5,35 @@ import 'package:flutter_app/mainPage/MainPage.dart';
 import 'dart:async';
 
 class LoadingPage extends StatelessWidget{
-  Timer _timer;
 
   LoadingPage(){
     SystemChrome.setEnabledSystemUIOverlays([]);
+  }
 
+  _delayTrans(BuildContext context) async{
+    await Future.delayed(const Duration(microseconds: 2000));
+    Navigator.pushNamed(context,
+        '/home');
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    _timer = Timer(const Duration(milliseconds: 2000),(){
-      Navigator.pushNamed(context,
-          '/home');
-    });
+    print("LoadingPage build");
+    _delayTrans(context);
     return Image.asset("images/loading.png",
             fit: BoxFit.fill,);
+
+  /*  return RaisedButton(
+      onPressed: (){
+        Navigator.pushNamed(context,
+            '/home');
+      },
+      child: Text("跳转"),
+    );*/
+
   }
 
-  @override
-  void dispose(){
-    _timer.cancel();
-  }
+
 
 }

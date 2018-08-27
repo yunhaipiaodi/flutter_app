@@ -4,7 +4,7 @@ import 'package:flutter_app/bottomTabPage/Home.dart';
 import 'package:flutter_app/bottomTabPage/Mine.dart';
 import 'package:flutter_app/bottomTabPage/Orders.dart';
 
-
+//这是一个主页
 class MainPage extends StatefulWidget {
 
   MainPage(){
