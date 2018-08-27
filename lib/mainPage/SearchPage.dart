@@ -13,6 +13,7 @@ class SearchPage extends StatefulWidget{
 class SearchState extends State<StatefulWidget>{
 
   String _searchKeyword = "";
+  bool _isSearching = false;
   bool _searchBarFocus = false;
   TextEditingController controller = TextEditingController();
   FocusNode _focusNode = FocusNode();
@@ -116,153 +117,72 @@ class SearchState extends State<StatefulWidget>{
   }
 
   Widget _getSearchAutoList(List<String> titles){
-    return ListView.builder(
-      itemCount: titles.length,
-      itemBuilder: (buildContext,index) => Container(
-        child: Text(titles[index]),
-        decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color:Colors.grey))
+    return Expanded(
+      child: ListView.builder(
+        itemCount: titles.length,
+        itemBuilder: (buildContext,index) => Container(
+          child: Text(titles[index]),
+          decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color:Colors.grey))
+          ),
         ),
       ),
     );
   }
 
-  /*Widget _getSearchList(bool _searchBarFocus){
-    if(_searchBarFocus){
-      if(_searchKeyword.isEmpty){
-        return FutureBuilder(
-            future: _getCommendKeywords(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if(snapshot.hasData){
-                List datas = snapshot.data;
-                if(datas.length == 0){
-                  return Center(
-                    child: Text("抱歉,没有找到推荐美食!"),
-                  );
-                }
-                List<String> keywords = List();
-                datas.forEach((object){
-                  keywords.add(object["commend_keyword"]);
-                });
-                return _getSearchAutoList(keywords);
-              }else{
-                return Center(
-                  child: Text("正在查找中..."),
-                );
-              }
-            },
-        );
-      }else{
-        return FutureBuilder(
-          future: _getCommendKeywords(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if(snapshot.hasData){
-              List datas = snapshot.data;
-              if(datas.length == 0){
-                return Center(
-                  child: Text("抱歉,没有找到推荐美食!"),
-                );
-              }
-              List<String> keywords = List();
-              datas.forEach((object){
-                keywords.add(object["commend_keyword"]);
-              });
-              return _getSearchAutoList(keywords);
-            }else{
+  Widget _getSearchList(){
+    if(_searchKeyword.isEmpty){
+      return FutureBuilder(
+        future: _getCommendKeywords(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.hasData){
+            List datas = snapshot.data;
+            if(datas.length == 0){
               return Center(
-                child: Text("正在查找中..."),
+                child: Text("抱歉,没有找到推荐美食!"),
               );
             }
-          },
-        );
-      }
+            List<String> keywords = List();
+            datas.forEach((object){
+              keywords.add(object["commend_keyword"]);
+            });
+            return _getSearchAutoList(keywords);
+          }else{
+            return Center(
+              child: Text("正在查找中..."),
+            );
+          }
+        },
+      );
     }else{
-      //return null
-      return Container();
+      return FutureBuilder(
+        future: _getCommendKeywords(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.hasData){
+            List datas = snapshot.data;
+            if(datas.length == 0){
+              return Center(
+                child: Text("抱歉,没有找到推荐美食!"),
+              );
+            }
+            List<String> keywords = List();
+            datas.forEach((object){
+              keywords.add(object["commend_keyword"]);
+            });
+            return _getSearchAutoList(keywords);
+          }else{
+            return Center(
+              child: Text("正在查找中..."),
+            );
+          }
+        },
+      );
     }
-  }*/
+  }
 
   //get search body
   Widget _getSearchBody(bool isKeywordEmpty){
-    if(_searchKeyword.isEmpty){
-      return Column(children: <Widget>[
-        //commend food title
-        Container(
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text("推荐美食",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
-                ],
-              ),
-            ],
-          ),
-          margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
-        ),
-
-        //get commend foods keywords from network
-        FutureBuilder(
-          future:  _getCommendKeywords(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            //get commend keywords list
-            if(snapshot.hasData){
-              List datas = snapshot.data;
-              if(datas.length == 0){
-                return Center(
-                  child: Text("抱歉,没有找到推荐美食!"),
-                );
-              }
-              List<String> keywords = List();
-              datas.forEach((object){
-                keywords.add(object["commend_keyword"]);
-              });
-              return Container(
-                child: Wrap(
-                  children: _showCommendKeywords(keywords),
-                ),
-                margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
-                alignment: Alignment.topLeft,
-              );
-            }else{
-              return Center(
-                child: Text("正在查找中..."),
-              );
-            }
-          },
-        ),
-
-        //history food title
-        Container(
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text("历史搜索",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
-                  IconButton(icon: Icon(Icons.delete),onPressed: null,),
-                ],
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              ),
-            ],
-          ),
-          margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
-        ),
-
-        //history
-        Container(
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  _getFoodItem("萝卜牛腩",false),
-                  _getFoodItem("鲍汁排骨饭",false),
-                ],
-              ),
-            ],
-          ),
-          margin: EdgeInsets.only(left: 16.0,right: 16.0),
-        ),
-      ],);
-    }else{
+    if(_isSearching){
       return FutureBuilder(
         future: _searchCuisine(_searchKeyword),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -290,7 +210,90 @@ class SearchState extends State<StatefulWidget>{
           }
         },
       );
+    }else{
+      if(_searchBarFocus){
+        return _getSearchList();
+      }else{
+        return Column(children: <Widget>[
+          //commend food title
+          Container(
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Text("推荐美食",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
+                  ],
+                ),
+              ],
+            ),
+            margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
+          ),
+
+          //get commend foods keywords from network
+          FutureBuilder(
+            future:  _getCommendKeywords(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              //get commend keywords list
+              if(snapshot.hasData){
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("抱歉,没有找到推荐美食!"),
+                  );
+                }
+                List<String> keywords = List();
+                datas.forEach((object){
+                  keywords.add(object["commend_keyword"]);
+                });
+                return Container(
+                  child: Wrap(
+                    children: _showCommendKeywords(keywords),
+                  ),
+                  margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+                  alignment: Alignment.topLeft,
+                );
+              }else{
+                return Center(
+                  child: Text("正在查找中..."),
+                );
+              }
+            },
+          ),
+
+          //history food title
+          Container(
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Text("历史搜索",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
+                    IconButton(icon: Icon(Icons.delete),onPressed: null,),
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
+              ],
+            ),
+            margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
+          ),
+
+          //history
+          Container(
+            child: Column(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    _getFoodItem("萝卜牛腩",false),
+                    _getFoodItem("鲍汁排骨饭",false),
+                  ],
+                ),
+              ],
+            ),
+            margin: EdgeInsets.only(left: 16.0,right: 16.0),
+          ),
+        ],);
+      }
     }
+
   }
 
 
