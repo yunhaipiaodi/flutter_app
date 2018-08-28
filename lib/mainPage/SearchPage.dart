@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'SqfliteHelp.dart' as Sqflite;
 
 class SearchPage extends StatefulWidget{
   @override
@@ -31,6 +32,7 @@ class SearchState extends State<StatefulWidget>{
     _focusNode.removeListener(_onFocusChange);
   }
 
+  //TextField Focus Listener
   _onFocusChange(){
     setState(() {
       _searchBarFocus = true;
@@ -44,6 +46,8 @@ class SearchState extends State<StatefulWidget>{
         setState(() {
           _searchKeyword = foodName;
           controller.text = foodName;
+          _isSearching = true;
+          _searchBarFocus = false;
         });
       },
       child: Container(
@@ -59,6 +63,9 @@ class SearchState extends State<StatefulWidget>{
     );
   }
 
+  /**
+   * get commend key; eg:no keywords;
+   * */
   Future _getCommendKeywords() async{
     String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_commend_search.php";
     var response = await http.get(url);
@@ -69,6 +76,9 @@ class SearchState extends State<StatefulWidget>{
     }
   }
 
+  /*
+  * get search result
+  * */
   Future _searchCuisine(String keyword) async{
     String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/search_cuisine.php?keyword=" + keyword;
     var response = await http.get(url);
@@ -79,6 +89,9 @@ class SearchState extends State<StatefulWidget>{
     }
   }
 
+  /*
+  * construct commend keyword list
+  * */
   List<Widget> _showCommendKeywords(List<String> keywords){
 
     List<Widget> widgets = List();
@@ -92,7 +105,10 @@ class SearchState extends State<StatefulWidget>{
     return widgets;
   }
 
-  Widget _getItemView(TabItemData data){
+  /*
+  * construct search result list item
+  * */
+  Widget _getSearchResultItemView(TabItemData data){
     return Card(
       child: Column(
         children: <Widget>[
@@ -116,72 +132,125 @@ class SearchState extends State<StatefulWidget>{
     );
   }
 
-  Widget _getSearchAutoList(List<String> titles){
+  /*
+  * construct Search Auto list
+  * */
+  Widget _initSearchAutoList(List<String> titles){
     return Expanded(
       child: ListView.builder(
         itemCount: titles.length,
-        itemBuilder: (buildContext,index) => Container(
-          child: Text(titles[index]),
-          decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color:Colors.grey))
+        itemBuilder: (buildContext,index) => GestureDetector(
+          onTap: (){
+            setState(() {
+              controller.text = titles[index];
+              _searchKeyword = titles[index];
+              _isSearching = true;
+              FocusScope.of(context).requestFocus(FocusNode());
+              _searchBarFocus = false;
+            });
+          },
+          child: Container(
+            child: Container(
+              child: Text(titles[index],style: TextStyle(fontSize: 20.0),),
+              margin: EdgeInsets.only(left: 16.0,top:8.0,bottom: 8.0),
+            ),
+            decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color:Colors.grey))
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _getSearchList(){
+  /*
+  * Search Auto complete list
+  * */
+  Widget _getAutoCompleteSearchList(){
     if(_searchKeyword.isEmpty){
       return FutureBuilder(
         future: _getCommendKeywords(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if(snapshot.hasData){
-            List datas = snapshot.data;
-            if(datas.length == 0){
+          // ignore: missing_enum_constant_in_switch
+          switch(snapshot.connectionState){
+            case ConnectionState.waiting:
               return Center(
-                child: Text("抱歉,没有找到推荐美食!"),
+                child: Text("正在查找中..."),
               );
-            }
-            List<String> keywords = List();
-            datas.forEach((object){
-              keywords.add(object["commend_keyword"]);
-            });
-            return _getSearchAutoList(keywords);
-          }else{
-            return Center(
-              child: Text("正在查找中..."),
-            );
+              break;
+            case ConnectionState.done:
+              if(snapshot.hasData){
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("抱歉,没有找到推荐美食!"),
+                  );
+                }
+                List<String> keywords = List();
+                datas.forEach((object){
+                  keywords.add(object["commend_keyword"]);
+                });
+                return  _initSearchAutoList(keywords);
+                }else{
+                return Center(
+                  child: Text("抱歉,没有找到推荐美食!"),
+                );
+              }
+            break;
+            default:
+              if(snapshot.hasError){
+                return Center(
+                  child: Text("查询错误:" + snapshot.error),
+                );
+              }
+              break;
           }
         },
       );
     }else{
       return FutureBuilder(
-        future: _getCommendKeywords(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if(snapshot.hasData){
-            List datas = snapshot.data;
-            if(datas.length == 0){
-              return Center(
-                child: Text("抱歉,没有找到推荐美食!"),
-              );
-            }
-            List<String> keywords = List();
-            datas.forEach((object){
-              keywords.add(object["commend_keyword"]);
-            });
-            return _getSearchAutoList(keywords);
-          }else{
-            return Center(
-              child: Text("正在查找中..."),
-            );
+        future:  _searchCuisine(_searchKeyword),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+          // ignore: missing_enum_constant_in_switch
+          switch(snapshot.connectionState){
+            case ConnectionState.done:
+              if(snapshot.hasData){
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("抱歉,没有找到推荐美食!"),
+                  );
+                }
+                List<String> keywords = List();
+                datas.forEach((object){
+                  keywords.add(object["name"]);
+                });
+                return  _initSearchAutoList(keywords);
+              }else{
+                return Center(
+                  child: Text("抱歉,没有找到推荐美食!"),
+                );
+              }
+              break;
+            case ConnectionState.waiting:
+              return Text("正在查找中...");
+              break;
+            default:
+              if(snapshot.hasError){
+                return Center(
+                  child: Text("查询错误:" + snapshot.error),
+                );
+              }
+              break;
           }
+
         },
       );
     }
   }
 
   //get search body
-  Widget _getSearchBody(bool isKeywordEmpty){
+  Widget _getSearchBody(){
     if(_isSearching){
       return FutureBuilder(
         future: _searchCuisine(_searchKeyword),
@@ -200,7 +269,7 @@ class SearchState extends State<StatefulWidget>{
             return Expanded(
               child: ListView.builder(
                 itemCount: _dataSource.length,
-                itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
+                itemBuilder: (buildContext,index) => _getSearchResultItemView(_dataSource[index]),
               ),
             );
           }else{
@@ -212,7 +281,7 @@ class SearchState extends State<StatefulWidget>{
       );
     }else{
       if(_searchBarFocus){
-        return _getSearchList();
+        return _getAutoCompleteSearchList();
       }else{
         return Column(children: <Widget>[
           //commend food title
@@ -321,7 +390,11 @@ class SearchState extends State<StatefulWidget>{
                     controller: controller,
                     focusNode: _focusNode,
                     onChanged: (keyword){
-                      print("focus in input:"+ keyword);
+                      setState(() {
+                        _isSearching = false;
+                        _searchBarFocus = true;
+                        _searchKeyword = keyword;
+                      });
                     },
                   ),
                   ),
@@ -336,7 +409,17 @@ class SearchState extends State<StatefulWidget>{
               //cancel btn
               GestureDetector(
                 onTap: (){
-                  Navigator.pop(context);
+                  if(_isSearching || _searchBarFocus){
+                    FocusScope.of(context).requestFocus(FocusNode());
+                   setState(() {
+                     _isSearching = false;
+                     _searchBarFocus = false;
+                     _searchKeyword = "";
+                     controller.text = "";
+                   });
+                  }else{
+                    Navigator.pop(context);
+                  }
                 },
                 child: Container(
                   child: Text("取消",style: TextStyle(color: Colors.white,fontSize: 18.0),),
@@ -350,7 +433,7 @@ class SearchState extends State<StatefulWidget>{
             color: Colors.blue,
           ),
 
-          _getSearchBody(_searchKeyword.isEmpty),
+          _getSearchBody(),
         ],
 
       ),
