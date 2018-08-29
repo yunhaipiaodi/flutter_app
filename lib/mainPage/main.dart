@@ -12,8 +12,8 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       initialRoute:'/',
       routes: {
-        '/loading':(context) => LoadingPage(),         //加载页
-        '/':(context) => MainPage(),        //首页
+        '/':(context) => LoadingPage(),         //加载页
+        '/home':(context) => MainPage(),        //首页
         '/search':(context)=>SearchPage(),
       },
     );

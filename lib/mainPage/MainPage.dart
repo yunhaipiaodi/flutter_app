@@ -1,8 +1,12 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/bottomTabPage/Home.dart';
 import 'package:flutter_app/bottomTabPage/Mine.dart';
 import 'package:flutter_app/bottomTabPage/Orders.dart';
+
 
 //这是一个主页
 class MainPage extends StatefulWidget {
@@ -26,6 +30,7 @@ class MainPageState extends State<MainPage>{
   ];
 
 
+
   @override
   void initState(){
     super.initState();
@@ -40,19 +45,22 @@ class MainPageState extends State<MainPage>{
       BottomNavigationBarItem(icon:Icon(Icons.assignment),title: Text('订单'),),
       BottomNavigationBarItem(icon:Icon(Icons.person),title: Text('我的'),),
     ];
-      return Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-              items: bottomItems,
-              currentIndex: _currentPageIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentPageIndex = index;
-                  _currentPage = _bottomPages[_currentPageIndex];
-                });
-              },
-          ),
-          body: _currentPage,
-      );
+      return WillPopScope(child: Scaffold(
+        bottomNavigationBar: BottomNavigationBar(
+          items: bottomItems,
+          currentIndex: _currentPageIndex,
+          onTap: (index) {
+            setState(() {
+              _currentPageIndex = index;
+              _currentPage = _bottomPages[_currentPageIndex];
+            });
+          },
+        ),
+        body: _currentPage,
+      ), onWillPop: (){
+        exit(0);
+        return Future(()=>false);
+      });
   }
 
 }

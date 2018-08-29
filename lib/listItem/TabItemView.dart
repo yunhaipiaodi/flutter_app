@@ -66,24 +66,41 @@ class TabItemState extends State<TabItemView>{
       FutureBuilder(
           future: _getFoods(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if(!snapshot.hasData){
-              return Center(
-                child: Text("数据加载中..."),
-              );
+            switch(snapshot.connectionState){
+              case ConnectionState.waiting:
+                return Center(
+                  child: Text("数据加载中..."),
+                );
+                break;
+              case ConnectionState.done:
+                if(!snapshot.hasData){
+                  return Center(
+                    child: Text("当前没有数据"),
+                  );
+                }
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("当前没有数据"),
+                  );
+                }
+                datas.forEach((jsonObject){
+                  _dataSource.add(TabItemData.fromJson(jsonObject));
+                });
+                return ListView.builder(
+                  itemCount: datas.length,
+                  itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
+                );
+                break;
+              default:
+                if(snapshot.hasError){
+                  return Center(
+                    child: Text("查询错误:" + snapshot.error),
+                  );
+                }
+                break;
             }
-            List datas = snapshot.data;
-            if(datas.length == 0){
-              return Center(
-                child: Text("当前没有数据"),
-              );
-            }
-            datas.forEach((jsonObject){
-              _dataSource.add(TabItemData.fromJson(jsonObject));
-            });
-            return ListView.builder(
-                itemCount: datas.length,
-                itemBuilder: (buildContext,index) => _getItemView(_dataSource[index]),
-            );
+
           }
       );
   }
