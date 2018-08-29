@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'SqfliteHelp.dart' as Sqflite;
+import 'package:flutter_app/tools/SqfliteHelp.dart';
+import 'package:sqflite/sqflite.dart';
+
 
 class SearchPage extends StatefulWidget{
   @override
@@ -18,24 +20,56 @@ class SearchState extends State<StatefulWidget>{
   bool _searchBarFocus = false;
   TextEditingController controller = TextEditingController();
   FocusNode _focusNode = FocusNode();
+  Database _db;
 
   @override
   void initState(){
     super.initState();
     //change state bar color
     _focusNode.addListener(_onFocusChange);
+
   }
 
   @override
   void dispose(){
-    super.dispose();
     _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _closeDatabase();
+    super.dispose();
+  }
+
+  /*
+  * init database for storage search record
+  * */
+
+
+  /*
+  * close database
+  * */
+  _closeDatabase() async{
+    if(_db != null){
+      await _db.close();
+    }
+  }
+
+  _insertSearchHistory(String historyKeyword)async{
+    //delete historyKeyword first
+    String deleteSql = "DELETE FROM SEARCH_HISTORY WHERE SEARCH_KEYWORD = '$historyKeyword'";
+    await SqfliteHelp.delete(deleteSql);
+    //insert historyKeyword
+    String insertSql = "INSERT INTO SEARCH_HISTORY (SEARCH_KEYWORD,CREATE_TIME) VALUES ('$historyKeyword',time())";
+    await SqfliteHelp.insert(insertSql);
+  }
+
+  Future<List<Map>> _getSearchHistoryList() async{
+    String querySql = "SELECT * FROM SEARCH_HISTORY ORDER BY CREATE_TIME DESC";
+    return SqfliteHelp.query(querySql);
   }
 
   //TextField Focus Listener
   _onFocusChange(){
     setState(() {
-      _searchBarFocus = true;
+      _searchBarFocus = _focusNode.hasFocus;
     });
   }
 
@@ -47,7 +81,7 @@ class SearchState extends State<StatefulWidget>{
           _searchKeyword = foodName;
           controller.text = foodName;
           _isSearching = true;
-          _searchBarFocus = false;
+          _insertSearchHistory(foodName);
         });
       },
       child: Container(
@@ -106,6 +140,17 @@ class SearchState extends State<StatefulWidget>{
   }
 
   /*
+  * construct history keyword list
+  * */
+  List<Widget> _showHistoryKeywords(List<String> keywords){
+    List<Widget> widgets = List();
+    keywords.forEach((String keyword){
+      widgets.add(_getFoodItem(keyword,false));
+    });
+    return widgets;
+  }
+
+  /*
   * construct search result list item
   * */
   Widget _getSearchResultItemView(TabItemData data){
@@ -122,7 +167,6 @@ class SearchState extends State<StatefulWidget>{
               crossAxisAlignment: CrossAxisAlignment.start,),
               margin: EdgeInsets.only(left: 16.0),
             ),
-
             IconButton(icon: Icon(Icons.shopping_cart,color: Colors.blue,),onPressed: null,),
           ],
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,6 +174,43 @@ class SearchState extends State<StatefulWidget>{
         ],
       ),
     );
+  }
+
+  /*
+  * construct search auto list item text
+  * */
+  Widget _initSearchAutoListItemText(String title){
+    if(_searchKeyword.length == 0){  //no need to change color
+      return Text(title,style: TextStyle(fontSize: 20.0),);
+    }else{
+      int start = title.indexOf(_searchKeyword);
+      String firstTitle = "";
+      String lastTitle = "";
+      if(start> 0 ){        //keyword not in front of title,should split first string
+        firstTitle = title.substring(0,start);
+      }
+      if((firstTitle.length + _searchKeyword.length) < title.length){
+          //keyword not at last of title,should split last string
+        lastTitle = title.substring(firstTitle.length + _searchKeyword.length,title.length);
+      }
+
+      return RichText(
+        text: TextSpan(
+          text:firstTitle,
+          style: TextStyle(fontSize: 20.0,color: Colors.black),
+          children: <TextSpan>[
+            TextSpan(
+              text:_searchKeyword,
+              style: TextStyle(color: Colors.blue,fontSize: 20.0),
+            ),
+            TextSpan(
+              text:lastTitle,
+              style: TextStyle(fontSize: 20.0,color: Colors.black),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   /*
@@ -145,13 +226,13 @@ class SearchState extends State<StatefulWidget>{
               controller.text = titles[index];
               _searchKeyword = titles[index];
               _isSearching = true;
+              _insertSearchHistory(titles[index]);
               FocusScope.of(context).requestFocus(FocusNode());
-              _searchBarFocus = false;
             });
           },
           child: Container(
             child: Container(
-              child: Text(titles[index],style: TextStyle(fontSize: 20.0),),
+              child: _initSearchAutoListItemText(titles[index]),
               margin: EdgeInsets.only(left: 16.0,top:8.0,bottom: 8.0),
             ),
             decoration: BoxDecoration(
@@ -255,27 +336,44 @@ class SearchState extends State<StatefulWidget>{
       return FutureBuilder(
         future: _searchCuisine(_searchKeyword),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if(snapshot.hasData){
-            List datas = snapshot.data;
-            if(datas.length == 0){
+          // ignore: missing_enum_constant_in_switch
+          switch(snapshot.connectionState){
+            case ConnectionState.waiting:
               return Center(
-                child: Text("没有找到你想要的东西!"),
+                child: Text("正在查找中..."),
               );
-            }
-            List<TabItemData> _dataSource = List();
-            datas.forEach((jsonObject){
-              _dataSource.add(TabItemData.fromJson(jsonObject));
-            });
-            return Expanded(
-              child: ListView.builder(
-                itemCount: _dataSource.length,
-                itemBuilder: (buildContext,index) => _getSearchResultItemView(_dataSource[index]),
-              ),
-            );
-          }else{
-            return Center(
-              child: Text("正在查找中..."),
-            );
+              break;
+            case ConnectionState.done:
+              if(snapshot.hasData){
+                List datas = snapshot.data;
+                if(datas.length == 0){
+                  return Center(
+                    child: Text("没有找到你想要的东西!"),
+                  );
+                }
+                List<TabItemData> _dataSource = List();
+                datas.forEach((jsonObject){
+                  _dataSource.add(TabItemData.fromJson(jsonObject));
+                });
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: _dataSource.length,
+                    itemBuilder: (buildContext,index) => _getSearchResultItemView(_dataSource[index]),
+                  ),
+                );
+              }else{
+                return Center(
+                  child: Text("没有找到你想要的东西!"),
+                );
+              }
+              break;
+            default:
+              if(snapshot.hasError){
+                return Center(
+                  child: Text("查询错误:" + snapshot.error),
+                );
+              }
+              break;
           }
         },
       );
@@ -302,29 +400,45 @@ class SearchState extends State<StatefulWidget>{
           FutureBuilder(
             future:  _getCommendKeywords(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              //get commend keywords list
-              if(snapshot.hasData){
-                List datas = snapshot.data;
-                if(datas.length == 0){
+              switch(snapshot.connectionState){
+                case ConnectionState.waiting:
                   return Center(
-                    child: Text("抱歉,没有找到推荐美食!"),
+                    child: Text("正在查找中..."),
                   );
-                }
-                List<String> keywords = List();
-                datas.forEach((object){
-                  keywords.add(object["commend_keyword"]);
-                });
-                return Container(
-                  child: Wrap(
-                    children: _showCommendKeywords(keywords),
-                  ),
-                  margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
-                  alignment: Alignment.topLeft,
-                );
-              }else{
-                return Center(
-                  child: Text("正在查找中..."),
-                );
+                  break;
+                case ConnectionState.done:
+                //get commend keywords list
+                  if(snapshot.hasData){
+                    List datas = snapshot.data;
+                    if(datas.length == 0){
+                      return Center(
+                        child: Text("抱歉,没有找到推荐美食!"),
+                      );
+                    }
+                    List<String> keywords = List();
+                    datas.forEach((object){
+                      keywords.add(object["commend_keyword"]);
+                    });
+                    return Container(
+                      child: Wrap(
+                        children: _showCommendKeywords(keywords),
+                      ),
+                      margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+                      alignment: Alignment.topLeft,
+                    );
+                  }else{
+                    return Center(
+                      child: Text("抱歉,没有找到推荐美食!"),
+                    );
+                  }
+                  break;
+                default:
+                  if(snapshot.hasError){
+                    return Center(
+                      child: Text("查询错误:" + snapshot.error),
+                    );
+                  }
+                  break;
               }
             },
           ),
@@ -335,29 +449,60 @@ class SearchState extends State<StatefulWidget>{
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Text("历史搜索",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
-                    IconButton(icon: Icon(Icons.delete),onPressed: null,),
+                    Text("搜索历史",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.bold),),
                   ],
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 ),
               ],
             ),
             margin: EdgeInsets.only(top: 16.0,left: 16.0,right: 16.0,),
           ),
 
+
           //history
-          Container(
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    _getFoodItem("萝卜牛腩",false),
-                    _getFoodItem("鲍汁排骨饭",false),
-                  ],
-                ),
-              ],
-            ),
-            margin: EdgeInsets.only(left: 16.0,right: 16.0),
+          FutureBuilder(
+            future: _getSearchHistoryList(),
+            builder: (BuildContext context,AsyncSnapshot snapshot){
+              // ignore: missing_enum_constant_in_switch
+              switch(snapshot.connectionState){
+                case ConnectionState.waiting:
+                  return Center(
+                    child: Text("正在查找中..."),
+                  );
+                  break;
+                case ConnectionState.done:
+                  if(snapshot.hasData){
+                    List<Map> results = snapshot.data;
+                    if(results.length == 0){
+                      return Center(
+                        child: Text("没有历史查询"),
+                      );
+                    }
+                    List<String> keywords = List();
+                    results.forEach((Map map){
+                      keywords.add(map["SEARCH_KEYWORD"]);
+                    });
+                    return Container(
+                      child: Wrap(
+                        children: _showHistoryKeywords(keywords),
+                      ),
+                      margin: EdgeInsets.only(left: 16.0,right: 16.0,top:8.0),
+                      alignment: Alignment.topLeft,
+                    );
+                  }else{
+                    return Center(
+                      child: Text("没有历史查询"),
+                    );
+                  }
+                  break;
+                default:
+                  if(snapshot.hasError){
+                    return Center(
+                      child: Text("查询错误:" + snapshot.error),
+                    );
+                  }
+                  break;
+              }
+            },
           ),
         ],);
       }
@@ -392,7 +537,6 @@ class SearchState extends State<StatefulWidget>{
                     onChanged: (keyword){
                       setState(() {
                         _isSearching = false;
-                        _searchBarFocus = true;
                         _searchKeyword = keyword;
                       });
                     },
@@ -413,7 +557,6 @@ class SearchState extends State<StatefulWidget>{
                     FocusScope.of(context).requestFocus(FocusNode());
                    setState(() {
                      _isSearching = false;
-                     _searchBarFocus = false;
                      _searchKeyword = "";
                      controller.text = "";
                    });
