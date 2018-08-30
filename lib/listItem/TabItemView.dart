@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/mainPage/DetailPage.dart';
 import 'package:http/http.dart';
 
 
@@ -28,7 +29,17 @@ class TabItemState extends State<TabItemView>{
     return Card(
       child: Column(
         children: <Widget>[
-          Image.network(data.foodImageUrl),
+          GestureDetector(
+            child: Image.network(data.foodImageUrl),
+            onTap: (){
+              Navigator.push(
+                  context, MaterialPageRoute(
+                builder: (context) => DetailPage(data.foodId),
+              )
+              );
+            },
+          ),
+
           Row(children: <Widget>[
             Container(
               child: Column(children: <Widget>[
@@ -39,7 +50,7 @@ class TabItemState extends State<TabItemView>{
               margin: EdgeInsets.only(left: 16.0),
             ),
 
-            IconButton(icon: Icon(Icons.shopping_cart,color: Colors.blue,),onPressed: null,),
+            //IconButton(icon: Icon(Icons.shopping_cart,color: Colors.blue,),onPressed: null,),
           ],
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
           ),
@@ -110,14 +121,16 @@ class TabItemState extends State<TabItemView>{
 
 class TabItemData{
 
+    int foodId;
     String foodImageUrl;
     String foodTitle;
     String foodPrice;
 
-    TabItemData(@required this.foodImageUrl,@required this.foodTitle,@required this.foodPrice);
+    TabItemData(@required this.foodId,@required this.foodImageUrl,@required this.foodTitle,@required this.foodPrice);
 
     TabItemData.fromJson(Map<String,dynamic> json)
-      :foodImageUrl=json["image_url"],
+      :foodId = int.parse(json["id"]),
+       foodImageUrl=json["image_url"],
        foodTitle = json["name"],
        foodPrice = json["price"];
 
