@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginPage extends StatefulWidget{
   @override
@@ -95,6 +96,49 @@ class LoginState extends State<LoginPage>{
                 ),
                 margin: EdgeInsets.only(top:16.0),
               ),
+
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      child:IconButton(icon: Icon(FontAwesomeIcons.qq,color: Colors.blue,),onPressed: null,),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue,width: 1.0),
+                          borderRadius: BorderRadius.all(Radius.circular(32.0))
+                      ),
+                    ),
+
+                    Container(
+                      child:IconButton(icon: Icon(FontAwesomeIcons.weixin,color: Colors.blue,),onPressed: null,),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue,width: 1.0),
+                          borderRadius: BorderRadius.all(Radius.circular(32.0))
+                      ),
+                    ),
+                    Container(
+                      child:IconButton(icon: Icon(FontAwesomeIcons.weibo,color: Colors.blue,),onPressed: null,),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue,width: 1.0),
+                          borderRadius: BorderRadius.all(Radius.circular(32.0))
+                      ),
+                    ),
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                ),
+                margin: EdgeInsets.only(top:16.0),
+              ),
+
+              Container(
+                child:Text(
+                  "还没有账号?",
+                  style: TextStyle(
+                    color: Colors.green,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+                margin: EdgeInsets.only(top:16.0),
+              ),
+
           ],
         ),
         margin: EdgeInsets.only(left: 16.0,top:32.0,right: 16.0,bottom: 16.0),

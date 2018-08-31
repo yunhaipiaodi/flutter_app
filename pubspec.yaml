@@ -12,6 +12,9 @@ dependencies:
   #sql lite library dependency
   sqflite: any
 
+  #font awesome flutter
+  font_awesome_flutter: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
