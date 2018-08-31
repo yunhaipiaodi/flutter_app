@@ -16,10 +16,10 @@ class MyApp extends StatelessWidget {
       initialRoute:'/',
       routes: {
         '/loading':(context) => LoadingPage(),         //加载页
-        '/home':(context) => MainPage(),        //首页
+        '/':(context) => MainPage(),        //首页
         '/search':(context)=>SearchPage(),      //搜索页
         '/login':(context) => LoginPage(),           //登陆页
-        '/':(context) => SignUpPage(),      //注册页
+        '/sign':(context) => SignUpPage(),      //注册页
       },
     );
   }

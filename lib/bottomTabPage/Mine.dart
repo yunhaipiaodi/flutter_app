@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_app/tools/Shared_preferences.dart';
 
 class Mine extends StatelessWidget{
 
@@ -12,6 +15,77 @@ class Mine extends StatelessWidget{
       "服务中心",
       "关于我们",
     ];
+
+    Future _getLoginState() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool hasLogin = await prefs.getBool("hasLogin");
+      hasLogin = hasLogin == null?false:true;
+      return hasLogin;
+    }
+
+    Widget _getUserInfoByLoginState(){
+      return FutureBuilder(
+        future: _getLoginState(),
+        builder: (BuildContext context,AsyncSnapshot snapshot){
+            if(snapshot.connectionState == ConnectionState.done){
+              bool hasLogin = snapshot.data == null?false:true;
+              if(hasLogin){
+                return Container(child:
+                Column(children: <Widget>[
+                  CircleAvatar(
+                    backgroundImage: NetworkImage("http://img4.duitang.com/uploads/item/201411/12/20141112115936_zYyEc.jpeg",),
+                    radius: 36.0,
+                  ),
+                  Container(child:
+                  Text("王尼玛",
+                    style: TextStyle(color: Colors.white,fontSize: 20.0),
+                  ),
+                    margin: const EdgeInsets.only(top:8.0),
+                  ),
+                  Row(children: <Widget>[
+                    Icon(Icons.location_on,color: Colors.white,),
+                    Text("广州",
+                      style: TextStyle(color: Colors.white,fontSize: 16.0),)
+                  ],
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  ),
+                ],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                ),
+                  height: 265.0,
+                  width: MediaQuery.of(context).size.width,
+                );
+              }else{
+                return Container(child:
+                Column(children: <Widget>[
+                  CircleAvatar(
+                    backgroundImage: NetworkImage("http://img4.duitang.com/uploads/item/201411/12/20141112115936_zYyEc.jpeg",),
+                    radius: 36.0,
+                  ),
+                  Container(
+                    child: RaisedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context,'/login');
+                      },
+                      child: Text("登陆",style: TextStyle(color: Colors.white),),
+                      color: Color.fromARGB(255, 255, 152, 0),
+                    ),
+                    margin: EdgeInsets.only(top: 8.0),
+                  ),
+
+                ],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                ),
+                  height: 265.0,
+                  width: MediaQuery.of(context).size.width,
+                );
+              }
+            }
+        },
+      );
+    }
     // TODO: implement build
     return Scaffold(
       body:Column(children: <Widget>[
@@ -33,29 +107,7 @@ class Mine extends StatelessWidget{
                 height: AppBar().preferredSize.height,
                 width: MediaQuery.of(context).size.width,
             ),
-            Container(child:
-              Column(children: <Widget>[
-                  CircleAvatar(
-                    backgroundImage: NetworkImage("http://img4.duitang.com/uploads/item/201411/12/20141112115936_zYyEc.jpeg",),
-                    radius: 36.0,
-                  ),
-                  Container(child:
-                    Text("王尼玛",
-                        style: TextStyle(color: Colors.white,fontSize: 20.0),
-                      ),
-                    margin: const EdgeInsets.only(top:8.0),
-                  ),
-                  Row(children: <Widget>[
-                      Icon(Icons.location_on,color: Colors.white,),
-                      Text("广州",
-                        style: TextStyle(color: Colors.white,fontSize: 16.0),)
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  ),
-                ],
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-              ),
+            Container(child:_getUserInfoByLoginState(),
               height: 265.0,
               width: MediaQuery.of(context).size.width,
             ),
