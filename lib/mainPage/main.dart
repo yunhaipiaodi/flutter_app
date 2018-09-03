@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         '/':(context) => MainPage(),        //首页
         '/search':(context)=>SearchPage(),      //搜索页
         '/login':(context) => LoginPage(),           //登陆页
-        '/sign':(context) => SignUpPage(),      //注册页
+        '/sign_up':(context) => SignUpPage(),      //注册页
       },
     );
   }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/tools/Shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Mine extends StatelessWidget{
 
@@ -19,7 +19,7 @@ class Mine extends StatelessWidget{
     Future _getLoginState() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool hasLogin = await prefs.getBool("hasLogin");
-      hasLogin = hasLogin == null?false:true;
+      hasLogin = hasLogin == null?false:hasLogin;
       return hasLogin;
     }
 
@@ -28,7 +28,7 @@ class Mine extends StatelessWidget{
         future: _getLoginState(),
         builder: (BuildContext context,AsyncSnapshot snapshot){
             if(snapshot.connectionState == ConnectionState.done){
-              bool hasLogin = snapshot.data == null?false:true;
+              bool hasLogin = snapshot.data;
               if(hasLogin){
                 return Container(child:
                 Column(children: <Widget>[
@@ -82,6 +82,31 @@ class Mine extends StatelessWidget{
                   width: MediaQuery.of(context).size.width,
                 );
               }
+            }else{
+              return Container(child:
+              Column(children: <Widget>[
+                CircleAvatar(
+                  backgroundImage: NetworkImage("http://img4.duitang.com/uploads/item/201411/12/20141112115936_zYyEc.jpeg",),
+                  radius: 36.0,
+                ),
+                Container(
+                  child: RaisedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context,'/login');
+                    },
+                    child: Text("登陆",style: TextStyle(color: Colors.white),),
+                    color: Color.fromARGB(255, 255, 152, 0),
+                  ),
+                  margin: EdgeInsets.only(top: 8.0),
+                ),
+
+              ],
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+              ),
+                height: 265.0,
+                width: MediaQuery.of(context).size.width,
+              );
             }
         },
       );

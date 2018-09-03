@@ -8,6 +8,7 @@ class SignUpPage extends StatefulWidget{
 class SignUpState extends State<SignUpPage>{
 
   final _formKey = GlobalKey<FormState>();
+  String firstPwd = "";
 
   @override
   Widget build(BuildContext context) {
@@ -33,22 +34,34 @@ class SignUpState extends State<SignUpPage>{
                   //account
                   Text("账号",style: TextStyle(color: Colors.blue),),
                   Container(
-                    child: TextFormField(
+                    child: Theme(
+                      data: ThemeData(
+                        hintColor: Colors.blue,
+                      ),
+                      child:TextFormField(
                         decoration: InputDecoration(
-                          hintText: "输入账号",
+                          hintText: "输入手机号",
+                          hintStyle: TextStyle(color:Color.fromARGB(255, 145, 167, 255)),
+                          border: OutlineInputBorder(),
                           fillColor: Colors.white,
                           filled: true,
-                          contentPadding: EdgeInsets.only(left: 16.0,top: 8.0,right: 16.0,bottom: 8.0),
-                          border:InputBorder.none,
-                          hintStyle: TextStyle(color: Colors.lightBlue),
                         ),
-                      style:TextStyle(color: Colors.blue),
+                        validator: (phone){
+                          //validate phone number input is right
+                          RegExp regExp = RegExp('^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\\d{8}\$');
+                          bool hasMatch= regExp.hasMatch(phone);
+                          if(!hasMatch){
+                            return "请输入正确的手机号码";
+                          }
+                        },
+                       onFieldSubmitted: (String value){
+                          print(value);
+                       },
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color:Colors.blue,width: 1.0),
-                    ),
-                    margin: EdgeInsets.only(top: 4.0),
+                    margin: EdgeInsets.only(top: 8.0),
                   ),
+
 
                   //password
                   Container(
@@ -56,21 +69,28 @@ class SignUpState extends State<SignUpPage>{
                     margin: EdgeInsets.only(top: 16.0),
                   ),
                   Container(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        hintText: "输入密码",
-                        fillColor: Colors.white,
-                        filled: true,
-                        contentPadding: EdgeInsets.only(left: 16.0,top: 8.0,right: 16.0,bottom: 8.0),
-                        border:InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.lightBlue),
+                    child: Theme(
+                      data: ThemeData(
+                        hintColor: Colors.blue,
                       ),
-                      style:TextStyle(color: Colors.blue),
+                      child:TextFormField(
+                        decoration: InputDecoration(
+                          hintText: "输入密码",
+                          hintStyle: TextStyle(color:Color.fromARGB(255, 145, 167, 255)),
+                          border: OutlineInputBorder(),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        validator: (val){
+                          //validate phone number input is right
+                          String password = val;
+                          if(val.length <8){
+                            return "密码必须8位以上!";
+                          }
+                        },
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color:Colors.blue,width: 1.0),
-                    ),
-                    margin: EdgeInsets.only(top: 4.0),
+                    margin: EdgeInsets.only(top: 8.0),
                   ),
 
                   //confirm password
@@ -79,21 +99,28 @@ class SignUpState extends State<SignUpPage>{
                     margin: EdgeInsets.only(top: 16.0),
                   ),
                   Container(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        hintText: "再次输入密码",
-                        fillColor: Colors.white,
-                        filled: true,
-                        contentPadding: EdgeInsets.only(left: 16.0,top: 8.0,right: 16.0,bottom: 8.0),
-                        border:InputBorder.none,
-                        hintStyle: TextStyle(color:Colors.lightBlue),
+                    child: Theme(
+                      data: ThemeData(
+                        hintColor: Colors.blue,
                       ),
-                      style:TextStyle(color: Colors.blue),
+                      child:TextFormField(
+                        decoration: InputDecoration(
+                          hintText: "确认密码",
+                          hintStyle: TextStyle(color:Color.fromARGB(255, 145, 167, 255)),
+                          border: OutlineInputBorder(),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        validator: (val){
+                          //validate phone number input is right
+                          String password = val;
+                          if(val.length <8){
+                            return "密码必须8位以上!";
+                          }
+                        },
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color:Colors.blue,width: 1.0),
-                    ),
-                    margin: EdgeInsets.only(top: 4.0),
+                    margin: EdgeInsets.only(top: 8.0),
                   ),
 
                   Container(

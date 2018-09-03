@@ -15,6 +15,9 @@ dependencies:
   #font awesome flutter
   font_awesome_flutter: any
 
+  #shared preference
+  shared_preferences: 0.4.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
