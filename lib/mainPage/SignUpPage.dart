@@ -60,7 +60,8 @@ class SignUpState extends State<SignUpPage>{
       ),
       body: Container(
         color: Color.fromARGB(255, 238, 238, 238),
-        child: Container(
+        child: SingleChildScrollView(
+          child: Container(
             child: Form(
               key: _formKey,
               child: Column(
@@ -187,7 +188,7 @@ class SignUpState extends State<SignUpPage>{
                         mainAxisAlignment: MainAxisAlignment.center,
                       ),
                     ),
-                    margin: EdgeInsets.only(top:16.0),
+                    margin: EdgeInsets.only(top:168.0),
                   ),
 
                 ],
@@ -195,6 +196,7 @@ class SignUpState extends State<SignUpPage>{
               ),
             ),
             margin: EdgeInsets.only(left: 16.0,top:32.0,right: 16.0,bottom: 16.0),
+          ),
         ),
       )
 
