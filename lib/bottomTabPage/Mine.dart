@@ -124,7 +124,12 @@ class Mine extends StatelessWidget{
                   color: Color.fromRGBO(0, 0, 0, 173.4),),
             Container(
                 child: Row(children: <Widget>[
-                        IconButton(icon: Icon(Icons.settings,color: Colors.white,), onPressed: null,),
+                        IconButton(
+                          icon: Icon(Icons.settings,color: Colors.white,),
+                          onPressed: (){
+                            Navigator.pushNamed(context, '/setting');
+                          },
+                        ),
                         ],
                         mainAxisAlignment: MainAxisAlignment.end,
                       ),
