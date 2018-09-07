@@ -40,6 +40,9 @@ flutter:
     - family:         icomoon
       fonts:
         - asset:      font/bubble.ttf
+    - family:         ali
+      fonts:
+        - asset:      font/alipay.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

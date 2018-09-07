@@ -46,7 +46,7 @@ class SettingPageState extends State<SettingPage>{
               child: Row(
                 children: <Widget>[
                   Text("退出登陆"),
-                  Icon(Icons.arrow_forward_ios,color: Colors.grey,),
+                  Icon(Icons.navigate_next,color: Colors.grey,),
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
               ),

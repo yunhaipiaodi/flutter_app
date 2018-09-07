@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailPage extends StatefulWidget{
 
@@ -24,6 +25,13 @@ class DetailState extends State<DetailPage>{
     }else{
      throw ("get cuisine by id error");
     }
+  }
+
+  Future<bool> _getLoginState() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasLogin = await prefs.getBool("hasLogin");
+    hasLogin = hasLogin == null?false:hasLogin;
+    return hasLogin;
   }
 
   Widget _getCommendItem(int index){
@@ -87,6 +95,7 @@ class DetailState extends State<DetailPage>{
           )
       ),
       margin: EdgeInsets.only(left: 8.0,right: 8.0),
+      padding: EdgeInsets.only(top: 8.0,bottom: 8.0),
     );
   }
 
@@ -170,7 +179,16 @@ class DetailState extends State<DetailPage>{
                                 crossAxisAlignment: CrossAxisAlignment.start,
                               ),
                               RaisedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  _getLoginState().then((bool hasLogin){
+                                    if(hasLogin){
+                                      Navigator.pushNamed(context, '/order_detail');
+                                    }else{
+                                      Navigator.pushNamed(context, '/login');
+                                    }
+                                  });
+
+                                },
                                 child: Text("下单",style: TextStyle(color: Colors.white),),
                                 color: Color.fromARGB(255, 255, 152, 0),
                               ),

@@ -161,13 +161,13 @@ class Mine extends StatelessWidget{
     return
       Container(
         height: 37.5,
-        margin: const EdgeInsets.only(top:16.0,left: 16.0,right: 8.0,),
+        margin: const EdgeInsets.only(left: 16.0,),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.grey)),
         ),
         child:Row(
           children: <Widget>[
-            Text(title,style: TextStyle(color: Colors.black,fontSize: 22.0),),
+            Text(title,),
             IconButton(icon: Icon(Icons.navigate_next,),onPressed: null,),
           ],
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
