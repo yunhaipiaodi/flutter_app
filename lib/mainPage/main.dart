@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/mainPage/AddAddressPage.dart';
+import 'package:flutter_app/mainPage/AddressListPage.dart';
 import 'package:flutter_app/mainPage/LoadingPage.dart';
 import 'package:flutter_app/mainPage/LoginPage.dart';
 import 'package:flutter_app/mainPage/MainPage.dart';
@@ -23,7 +25,9 @@ class MyApp extends StatelessWidget {
         '/login':(context) => LoginPage(),           //登陆页
         '/sign_up':(context) => SignUpPage(),      //注册页
         '/setting':(context) => SettingPage(),      //设置页
-        '/order_detail':(context) => OrderDetailPage(),      //设置页
+        '/order_detail':(context) => OrderDetailPage(0,"","",""),      //下单页
+        '/address_list':(context) => AddressListPage(),      //地址管理页
+        '/add_address':(context) => AddAddressPage(),      //添加地址
       },
     );
   }

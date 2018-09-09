@@ -2,6 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class OrderDetailPage extends StatefulWidget{
+
+  int cuisineId = 0;
+  String cuisineImageUrl = "";
+  String cuisineName = "";
+  String cuisinePrice = "";
+
+  OrderDetailPage(
+      this.cuisineId,
+      this.cuisineImageUrl,
+      this.cuisineName,
+      this.cuisinePrice,
+      );
+
   @override
   OrderDetailState createState() => OrderDetailState();
 }
@@ -71,7 +84,7 @@ class OrderDetailState extends State<OrderDetailPage>{
                   IconButton(
                     icon: Icon(Icons.arrow_forward_ios,color: Colors.grey,),
                     onPressed: (){
-
+                      Navigator.pushNamed(context, '/address_list');
                     },
                   ),
 
@@ -87,15 +100,15 @@ class OrderDetailState extends State<OrderDetailPage>{
               child: Row(
                 children: <Widget>[
                   Image.network(
-                    "http://yunhaipiaodi.gz01.bdysite.com/AppServer/cuisine_img/5b7e1610f3629.jpg",
+                    widget.cuisineImageUrl,
                     width: 80.0,
                     height: 45.0,
                   ),
 
                  Column(
                    children: <Widget>[
-                     Text("攸县香干",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
-                     Text("￥56",style: TextStyle(color: Colors.blue,),),
+                     Text(widget.cuisineName,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
+                     Text("￥" + widget.cuisinePrice,style: TextStyle(color: Colors.blue,),),
                    ],
                    crossAxisAlignment: CrossAxisAlignment.end,
                  ),
@@ -122,65 +135,92 @@ class OrderDetailState extends State<OrderDetailPage>{
               color: Color.fromARGB(255, 143, 143, 143),
               height: 1.0,
             ),
-            Container(
-              child: ListTile(
-                leading: Icon(FontAwesomeIcons.weixin,color: Colors.blue,),
-                title: Text("微信支付"),
-                selected: _selectValue == 0?true:false,
-                trailing: Radio(
-                  value: 0,
-                  groupValue: _selectValue,
-                  onChanged: (int value){
-                    setState(() {
-                      _selectValue = value;
-                    });
-                  },
+            GestureDetector(
+              child: Container(
+                child: ListTile(
+                  leading: Icon(FontAwesomeIcons.weixin,color: Colors.blue,),
+                  title: Text("微信支付"),
+                  selected: _selectValue == 0?true:false,
+                  trailing: Radio(
+                    value: 0,
+                    groupValue: _selectValue,
+                    onChanged: (int value){
+                      setState(() {
+                        _selectValue = value;
+                      });
+                    },
+                  ),
                 ),
+                color: Colors.white,
               ),
-              color: Colors.white,
+              onTap: (){
+                setState(() {
+                  _selectValue = 0;
+                });
+              },
             ),
+
             Divider(
               color: Color.fromARGB(255, 143, 143, 143),
               height: 1.0,
             ),
-            Container(
-              child: ListTile(
-                leading: Icon(IconData(0xe802, fontFamily: "ali"),color: Colors.blue,),
-                title: Text("支付宝"),
-                selected: _selectValue == 1?true:false,
-                trailing: Radio(
-                  value: 1,
-                  groupValue: _selectValue,
-                  onChanged: (int value){
-                    setState(() {
-                      _selectValue = value;
-                    });
-                  },
+
+            GestureDetector(
+              child: Container(
+                child: ListTile(
+                  leading: Icon(IconData(0xe802, fontFamily: "ali"),color: Colors.blue,),
+                  title: Text("支付宝"),
+                  selected: _selectValue == 1?true:false,
+                  trailing: Radio(
+                    value: 1,
+                    groupValue: _selectValue,
+                    onChanged: (int value){
+                      setState(() {
+                        _selectValue = value;
+                      });
+                    },
+                  ),
                 ),
+                color: Colors.white,
               ),
-              color: Colors.white,
+              onTap: (){
+                setState(() {
+                  _selectValue = 1;
+                });
+              },
             ),
+
             Divider(
               color: Color.fromARGB(255, 143, 143, 143),
               height: 1.0,
             ),
-            Container(
-              child: ListTile(
-                leading: Icon(FontAwesomeIcons.creditCard,color: Colors.blue,),
-                title: Text("银行卡"),
-                selected: _selectValue == 2?true:false,
-                trailing: Radio(
-                  value: 2,
-                  groupValue: _selectValue,
-                  onChanged: (int value){
-                    setState(() {
-                      _selectValue = value;
-                    });
-                  },
+
+            GestureDetector(
+              child: Container(
+                child: ListTile(
+                  leading: Icon(FontAwesomeIcons.creditCard,color: Colors.blue,),
+                  title: Text("银行卡"),
+                  selected: _selectValue == 2?true:false,
+                  trailing: Radio(
+                    value: 2,
+                    groupValue: _selectValue,
+                    onChanged: (int value){
+                      setState(() {
+                        _selectValue = value;
+                      });
+                    },
+                  ),
                 ),
+                color: Colors.white,
               ),
-              color: Colors.white,
+
+              onTap: (){
+                setState(() {
+                  _selectValue = 2;
+                });
+              },
             ),
+
             Divider(
               color: Color.fromARGB(255, 143, 143, 143),
               height: 1.0,

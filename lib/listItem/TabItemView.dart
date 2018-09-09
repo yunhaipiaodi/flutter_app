@@ -111,13 +111,10 @@ class TabItemState extends State<TabItemView>{
                 }
                 break;
             }
-
           }
       );
   }
-
 }
-
 
 class TabItemData{
 

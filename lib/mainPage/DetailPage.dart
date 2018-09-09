@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/mainPage/LoginPage.dart';
+import 'package:flutter_app/mainPage/OrderDetailPage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +19,7 @@ class DetailPage extends StatefulWidget{
 
 class DetailState extends State<DetailPage>{
 
-  Future _getCuisineById(int id) async{
+  Future<Map<String,dynamic>> _getCuisineById(int id) async{
     String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_cuisine_by_id.php?cuisine_id=$id";
     var response = await http.get(url);
     if(response.statusCode == 200){
@@ -116,7 +118,8 @@ class DetailState extends State<DetailPage>{
                   ),
                 );
               }
-              Map cuisineData = snapshot.data;
+              Map<String,dynamic> data = snapshot.data;
+              CuisineData cuisineData = CuisineData.fromJson(data);
               return Scaffold(
                 body: Column(
                   children: <Widget>[
@@ -125,7 +128,7 @@ class DetailState extends State<DetailPage>{
                       children: <Widget>[
                         Container(
                           child:  Image.network(
-                            cuisineData["image_url"],
+                            cuisineData.imageUrl,
                           ),
                         ),
                         Container(
@@ -146,7 +149,7 @@ class DetailState extends State<DetailPage>{
                       child: Column(
                         children: <Widget>[
                           Container(
-                            child:Text(cuisineData["name"],style: TextStyle(fontSize: 28.0,color: Colors.black,fontWeight: FontWeight.bold,),textAlign: TextAlign.start,),
+                            child:Text(cuisineData.name,style: TextStyle(fontSize: 28.0,color: Colors.black,fontWeight: FontWeight.bold,),textAlign: TextAlign.start,),
                             alignment: Alignment.topLeft,
                           ),
 
@@ -156,7 +159,7 @@ class DetailState extends State<DetailPage>{
                             alignment: Alignment.topLeft,
                           ),
                           Container(
-                            child: Text("￥" + cuisineData['price'],style: TextStyle(fontSize: 24.0,color: Colors.blue),),
+                            child: Text("￥" + cuisineData.price,style: TextStyle(fontSize: 24.0,color: Colors.blue),),
                             margin: EdgeInsets.only(top:8.0),
                             alignment: Alignment.topLeft,
                           ),
@@ -171,7 +174,7 @@ class DetailState extends State<DetailPage>{
                                     alignment: Alignment.topLeft,
                                   ),
                                   Container(
-                                    child: Text(cuisineData['description'] == null?"暂无":cuisineData['description'],style: TextStyle(fontSize: 12.0,),),
+                                    child: Text(cuisineData.description == null?"暂无":cuisineData.description,style: TextStyle(fontSize: 12.0,),),
                                     margin: EdgeInsets.only(top:8.0),
                                     alignment: Alignment.topLeft,
                                   ),
@@ -182,9 +185,14 @@ class DetailState extends State<DetailPage>{
                                 onPressed: () {
                                   _getLoginState().then((bool hasLogin){
                                     if(hasLogin){
-                                      Navigator.pushNamed(context, '/order_detail');
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => OrderDetailPage(
+                                          widget.cuisine_id,
+                                          cuisineData.imageUrl,
+                                          cuisineData.name,
+                                          cuisineData.price,
+                                      )));
                                     }else{
-                                      Navigator.pushNamed(context, '/login');
+                                      Navigator.pushNamed(context,'/login');
                                     }
                                   });
 
@@ -269,5 +277,23 @@ class DetailState extends State<DetailPage>{
         },
     );
   }
+}
 
+class CuisineData{
+  int id;
+  String name;
+  String price;
+  String imageUrl;
+  String description;
+  String createTime;
+
+  CuisineData(@required this.id,@required this.name,@required this.price,@required this.imageUrl,@required this.description,@required this.createTime);
+
+  CuisineData.fromJson(Map<String,dynamic> json):
+      id = int.parse(json["id"]),
+      name = json["name"],
+      price = json["price"],
+      imageUrl = json["image_url"],
+      description = json["description"],
+      createTime = json["create_time"];
 }
