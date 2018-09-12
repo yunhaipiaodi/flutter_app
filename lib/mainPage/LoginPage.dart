@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,20 +19,22 @@ class LoginState extends State<LoginPage>{
   String userName ="";
   String password = "";
 
-  Future<int> _checkLoginUser(String userName,String password) async{
+  Future<Map<String,dynamic>> _checkLoginUser(String userName,String password) async{
     String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/check_login_user.php?user_name=$userName&password=$password";
     var response = await http.get(url);
     if(response.statusCode == 200){
-      return int.parse(response.body);
+      return json.decode(response.body);
     }else{
       print("checkUserNameExist net error:" + response.statusCode.toString());
-      return -1;
     }
   }
 
-  Future _StoreLoginState() async{
+  Future _StoreLoginState(int userId,String userName,String avatar) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool("hasLogin", true);
+    await prefs.setInt("userId", userId);
+    await prefs.setString("userName", userName);
+    await prefs.setString("avatar", avatar);
     return true;
   }
 
@@ -105,9 +108,13 @@ class LoginState extends State<LoginPage>{
                         color: Colors.blue,
                         onPressed: (){
                           if(_formKey.currentState.validate()){
-                            _checkLoginUser(userName,password).then((int code){
-                              if(code == 0){
-                                _StoreLoginState().then((result){
+                            _checkLoginUser(userName,password).then((Map<String,dynamic> map){
+                              LoginReturn loginReturn = LoginReturn.fromJson(map);
+                              if( loginReturn.resultCode== 0){
+                                int id = loginReturn.loginData.id;
+                                String userName = loginReturn.loginData.name;
+                                String avatar = loginReturn.loginData.avatar;
+                                _StoreLoginState(id,userName,avatar).then((result){
                                   Navigator.pop(context);
                                 });
                               }else{
@@ -190,4 +197,32 @@ class LoginState extends State<LoginPage>{
     );
   }
 
+}
+
+class LoginData{
+  int id;
+  String name;
+  String password;
+  String avatar;
+  String createTime;
+
+
+  LoginData.fromJson(Map<String,dynamic> map):
+      id = int.parse(map["id"]),
+      name = map["name"],
+      password = map["password"],
+      avatar = map["avatar"],
+      createTime = map["create_time"];
+}
+
+class LoginReturn{
+  int resultCode;
+  LoginData loginData;
+
+  LoginReturn.fromJson(Map<String,dynamic> map){
+    resultCode = map["result_code"];
+    if(resultCode == 0){
+      loginData = LoginData.fromJson(map["data"]);
+    }
+  }
 }

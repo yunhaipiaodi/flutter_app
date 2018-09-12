@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:convert/convert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddAddressPage extends StatefulWidget{
   @override
@@ -13,9 +14,10 @@ class AddAddressPage extends StatefulWidget{
 class AddAddressState extends State<AddAddressPage>{
 
   final _formKey = GlobalKey<FormState>();
-
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   String _address = "";
   String _phone = "";
+
 
   List<Widget> _showTypeTags(List<String> tagList){
     List<Widget> widgets = List();
@@ -25,7 +27,17 @@ class AddAddressState extends State<AddAddressPage>{
     return widgets;
   }
 
-  Future _commitData (int userId,String phone,String address,int address_type_id) async{
+  Future<Map<String,dynamic>> _getLocalUserData() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int userId = await prefs.getInt("userId");
+    String userName = await prefs.getString("userName");
+    return{
+      "userId":userId,
+      "userName":userName
+    };
+  }
+
+  Future<bool> _commitData (int userId,String phone,String address,int address_type_id) async{
     String url = "ttp://yunhaipiaodi.gz01.bdysite.com/AppServer/php/add_address.php";
     Map postData = {
       "user_id":userId,
@@ -78,6 +90,7 @@ class AddAddressState extends State<AddAddressPage>{
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
+      key:scaffoldKey,
       appBar: AppBar(
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -170,7 +183,16 @@ class AddAddressState extends State<AddAddressPage>{
                     mainAxisAlignment: MainAxisAlignment.center,
                   ),
                   onPressed: (){
-
+                    _getLocalUserData().then((Map<String,dynamic> map){
+                      int userId = map["userId"];
+                      _commitData(userId, _phone, _address, 1).then((bool result){
+                        if(result){
+                          Navigator.pop(context);
+                        }else{
+                          scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("提交失败")));
+                        }
+                      });
+                    });
                   },
                 ),
                 margin: EdgeInsets.only(top:32.0,),
