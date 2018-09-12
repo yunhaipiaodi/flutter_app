@@ -38,15 +38,15 @@ class AddAddressState extends State<AddAddressPage>{
   }
 
   Future<bool> _commitData (int userId,String phone,String address,int address_type_id) async{
-    String url = "ttp://yunhaipiaodi.gz01.bdysite.com/AppServer/php/add_address.php";
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/add_address.php";
     Map postData = {
-      "user_id":userId,
+      "user_id":userId.toString(),
       "address":address,
       "phone":phone,
-      "address_type_id":address_type_id,
+      "address_type_id":address_type_id.toString(),
     };
     var response = await http.post(url,body: postData);
-    if(response == 200){
+    if(response.statusCode == 200){
       return true;
     }else{
       print("commmit data error:" + response.statusCode.toString());
@@ -183,16 +183,18 @@ class AddAddressState extends State<AddAddressPage>{
                     mainAxisAlignment: MainAxisAlignment.center,
                   ),
                   onPressed: (){
-                    _getLocalUserData().then((Map<String,dynamic> map){
-                      int userId = map["userId"];
-                      _commitData(userId, _phone, _address, 1).then((bool result){
-                        if(result){
-                          Navigator.pop(context);
-                        }else{
-                          scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("提交失败")));
-                        }
+                    if(_formKey.currentState.validate()){
+                      _getLocalUserData().then((Map<String,dynamic> map){
+                        int userId = map["userId"];
+                        _commitData(userId, _phone, _address, 1).then((bool result){
+                          if(result){
+                            Navigator.pop(context);
+                          }else{
+                            scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("提交失败")));
+                          }
+                        });
                       });
-                    });
+                    }
                   },
                 ),
                 margin: EdgeInsets.only(top:32.0,),
