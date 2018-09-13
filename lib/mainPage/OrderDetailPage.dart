@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class OrderDetailPage extends StatefulWidget{
 
@@ -23,6 +28,88 @@ class OrderDetailState extends State<OrderDetailPage>{
 
   int _selectValue = 0;
 
+  //get address list data
+  Future _getAddressList() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    int userId = sharedPreferences.getInt("userId");
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_address_list.php?user_id=" + userId.toString();
+    var response = await http.get(url);
+    if(response.statusCode == 200){
+      return json.decode(response.body);
+    }else{
+      throw Exception("getAddressList error,code:" + response.statusCode.toString());
+    }
+  }
+
+  //add order to web
+  Future _addOrder(int cuisineId,int userId,int addressId,) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    int userId = sharedPreferences.getInt("userId");
+    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_address_list.php?user_id=" + userId.toString();
+    var response = await http.get(url);
+    if(response.statusCode == 200){
+      return json.decode(response.body);
+    }else{
+      throw Exception("getAddressList error,code:" + response.statusCode.toString());
+    }
+  }
+
+  Widget _getAddressWidget(AddressMode addressMode){
+    //receiver message
+    return Container(
+      child: Row(
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text(addressMode.userName,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
+                  Container(
+                    child: Text(addressMode.phone,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
+                    margin: const EdgeInsets.only(left: 16.0),
+                  ),
+                ],
+                mainAxisAlignment: MainAxisAlignment.start,
+              ),
+              Row(
+                children: <Widget>[
+                  Container(
+                    height: 12.0,
+                    child: Text("默认",style: TextStyle(color: Colors.white,fontSize: 10.0),),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      color: Colors.red,
+                    ),
+                    padding: EdgeInsets.only(left: 6.0,right: 6.0),
+                    margin: EdgeInsets.only(right: 4.0,top:4.0),
+                  ),
+                  Container(
+                    child: Text(addressMode.address,style: TextStyle(fontSize: 12.0),),
+                    margin: const EdgeInsets.only(left: 16.0),
+                    width: 220.0,
+                  ),
+                ],
+                mainAxisAlignment: MainAxisAlignment.start,
+              ),
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+
+          IconButton(
+            icon: Icon(Icons.arrow_forward_ios,color: Colors.grey,),
+            onPressed: (){
+              Navigator.pushNamed(context, '/address_list');
+            },
+          ),
+
+        ],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      ),
+      padding: EdgeInsets.only(left: 16.0,top:16.0,bottom: 16.0,),
+      color: Colors.white,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -41,58 +128,31 @@ class OrderDetailState extends State<OrderDetailPage>{
         child: Column(
           children: <Widget>[
 
-            //receiver message
-            Container(
-              child: Row(
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Text("文迪",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
-                          Container(
-                            child: Text("159****1876",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18.0),),
-                            margin: const EdgeInsets.only(left: 16.0),
-                          ),
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.start,
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            height: 12.0,
-                            child: Text("默认",style: TextStyle(color: Colors.white,fontSize: 10.0),),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                              color: Colors.red,
-                            ),
-                            padding: EdgeInsets.only(left: 6.0,right: 6.0),
-                            margin: EdgeInsets.only(right: 4.0,top:4.0),
-                          ),
-                          Container(
-                            child: Text("广东省广州市天河区 元岗路310号自编3栋c213单元",style: TextStyle(fontSize: 12.0),),
-                            margin: const EdgeInsets.only(left: 16.0),
-                            width: 220.0,
-                          ),
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.start,
-                      ),
-                    ],
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                  ),
-
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward_ios,color: Colors.grey,),
-                    onPressed: (){
-                      Navigator.pushNamed(context, '/address_list');
-                    },
-                  ),
-
-                ],
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              ),
-              padding: EdgeInsets.only(left: 16.0,top:16.0,bottom: 16.0,),
-              color: Colors.white,
+            FutureBuilder(
+              future: _getAddressList(),
+              builder: (BuildContext context,AsyncSnapshot snapShot){
+                // ignore: missing_enum_constant_in_switch
+                switch(snapShot.connectionState){
+                  case ConnectionState.waiting:
+                    return Text("数据查询中...");
+                    break;
+                  case ConnectionState.done:
+                    if(snapShot.hasData){
+                      List<dynamic> maps = snapShot.data;
+                      AddressMode addressMode = null;
+                      maps.forEach((map){
+                        AddressMode obj = AddressMode.fromJson(map);
+                        if(obj.selected == 1){
+                          addressMode = obj;
+                        }
+                      });
+                      return _getAddressWidget(addressMode);
+                    }else{
+                      return Text("暂无数据");
+                    }
+                    break;
+                }
+              },
             ),
 
             //cuisine
@@ -249,4 +309,25 @@ class OrderDetailState extends State<OrderDetailPage>{
     );
   }
 
+}
+
+class AddressMode{
+  int id;
+  int userId;
+  String userName;
+  String address;
+  String phone;
+  int selected;
+  int addressTypeId;
+  String createTime;
+
+  AddressMode.fromJson(Map<String,dynamic> map):
+        id = int.parse(map["id"]),
+        userId = int.parse(map["user_id"]),
+        userName = map["user_name"],
+        address = map["address"],
+        phone = map["phone"],
+        selected = int.parse(map["selected"]),
+        addressTypeId = int.parse(map["address_type_id"]),
+        createTime = map["create_time"];
 }

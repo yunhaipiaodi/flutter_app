@@ -17,7 +17,7 @@ class AddAddressState extends State<AddAddressPage>{
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   String _address = "";
   String _phone = "";
-
+  String _name = "";
 
   List<Widget> _showTypeTags(List<String> tagList){
     List<Widget> widgets = List();
@@ -37,12 +37,13 @@ class AddAddressState extends State<AddAddressPage>{
     };
   }
 
-  Future<bool> _commitData (int userId,String phone,String address,int address_type_id) async{
+  Future<bool> _commitData (int userId,String userName,String phone,String address,int address_type_id) async{
     String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/add_address.php";
     Map postData = {
       "user_id":userId.toString(),
       "address":address,
       "phone":phone,
+      "user_name":userName,
       "address_type_id":address_type_id.toString(),
     };
     var response = await http.post(url,body: postData);
@@ -101,110 +102,130 @@ class AddAddressState extends State<AddAddressPage>{
         title: Text("添加地址"),
         centerTitle: true,
       ),
-      body: Container(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
+      body: SingleChildScrollView(
+        child: Container(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
 
-              Theme(
-                data: ThemeData(
-                  hintColor: Colors.blue,
-                ),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "输入手机号码",
-                    hintStyle: TextStyle(color: Colors.blue),
+                Theme(
+                  data: ThemeData(
+                    hintColor: Colors.blue,
                   ),
-                  validator: (String value){
-                    _phone = value;
-                    //validate phone number input is right
-                    RegExp regExp = RegExp('^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\\d{8}\$');
-                    bool hasMatch= regExp.hasMatch(value);
-                    if(!hasMatch){
-                      return "请输入正确的手机号码";
-                    }
-
-                  },
-                ),
-              ),
-              Theme(
-                data: ThemeData(
-                  hintColor: Colors.blue,
-                ),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "输入详细地址",
-                    hintStyle: TextStyle(color: Colors.blue),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText: "输入联系人名字",
+                      hintStyle: TextStyle(color: Colors.blue),
+                    ),
+                    validator: (String value){
+                      _name = value;
+                      if(value.isEmpty){
+                        return "名字不能为空";
+                      }
+                    },
                   ),
-                  validator: (String value){
-                    _address = value;
-                    //validate phone number input is right
-                    if(value.length == 0){
-                      return "地址不能为空";
-                    }
-                  },
                 ),
-              ),
 
-              Container(
-                child: Text("所属标签"),
-                margin: const EdgeInsets.only(top:16.0),
-              ),
-
-              FutureBuilder(
-                future: _getAddressType(),
-                builder: (BuildContext context,AsyncSnapshot snapShot){
-                  List<String> tags = List();
-                  if(snapShot.connectionState == ConnectionState.done){
-                    if(snapShot.hasData){
-                      List<dynamic> maps = snapShot.data;
-                      maps.forEach((map){
-                        AddressType addressType = AddressType.fromJson(map);
-                        tags.add(addressType.type_name);
-                      });
-                    }
-                    return Wrap(
-                      children: _showTypeTags(tags),
-                    );
-                  }else{
-                    return Wrap();
-                  }
-                },
-              ),
-
-              Container(
-                child:  RaisedButton(
-                  color:Colors.blue,
-                  child: Row(
-                    children: <Widget>[
-                      Text("创建地址",style: TextStyle(fontSize: 18.0,color: Colors.white),),
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.center,
+                Theme(
+                  data: ThemeData(
+                    hintColor: Colors.blue,
                   ),
-                  onPressed: (){
-                    if(_formKey.currentState.validate()){
-                      _getLocalUserData().then((Map<String,dynamic> map){
-                        int userId = map["userId"];
-                        _commitData(userId, _phone, _address, 1).then((bool result){
-                          if(result){
-                            Navigator.pop(context);
-                          }else{
-                            scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("提交失败")));
-                          }
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText: "输入手机号码",
+                      hintStyle: TextStyle(color: Colors.blue),
+                    ),
+                    validator: (String value){
+                      _phone = value;
+                      //validate phone number input is right
+                      RegExp regExp = RegExp('^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\\d{8}\$');
+                      bool hasMatch= regExp.hasMatch(value);
+                      if(!hasMatch){
+                        return "请输入正确的手机号码";
+                      }
+
+                    },
+                  ),
+                ),
+                Theme(
+                  data: ThemeData(
+                    hintColor: Colors.blue,
+                  ),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText: "输入详细地址",
+                      hintStyle: TextStyle(color: Colors.blue),
+                    ),
+                    validator: (String value){
+                      _address = value;
+                      //validate phone number input is right
+                      if(value.length == 0){
+                        return "地址不能为空";
+                      }
+                    },
+                  ),
+                ),
+
+                Container(
+                  child: Text("所属标签"),
+                  margin: const EdgeInsets.only(top:16.0),
+                ),
+
+                FutureBuilder(
+                  future: _getAddressType(),
+                  builder: (BuildContext context,AsyncSnapshot snapShot){
+                    List<String> tags = List();
+                    if(snapShot.connectionState == ConnectionState.done){
+                      if(snapShot.hasData){
+                        List<dynamic> maps = snapShot.data;
+                        maps.forEach((map){
+                          AddressType addressType = AddressType.fromJson(map);
+                          tags.add(addressType.type_name);
                         });
-                      });
+                      }
+                      return Wrap(
+                        children: _showTypeTags(tags),
+                      );
+                    }else{
+                      return Wrap();
                     }
                   },
                 ),
-                margin: EdgeInsets.only(top:32.0,),
-              ),
-            ],
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+                Container(
+                  child:  RaisedButton(
+                    color:Colors.blue,
+                    child: Row(
+                      children: <Widget>[
+                        Text("创建地址",style: TextStyle(fontSize: 18.0,color: Colors.white),),
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    onPressed: (){
+                      if(_formKey.currentState.validate()){
+                        _getLocalUserData().then((Map<String,dynamic> map){
+                          int userId = map["userId"];
+                          _commitData(userId,_name, _phone, _address, 1).then((bool result){
+                            if(result){
+                              Navigator.pop(context);
+                            }else{
+                              scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("提交失败")));
+                            }
+                          });
+                        });
+                      }
+                    },
+                  ),
+                  margin: EdgeInsets.only(top:32.0,),
+                ),
+              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
           ),
+          margin: const EdgeInsets.only(left: 16.0,right: 16.0,top:16.0),
         ),
-        margin: const EdgeInsets.only(left: 16.0,right: 16.0,top:16.0),
-      ),
+      )
     );
   }
 
