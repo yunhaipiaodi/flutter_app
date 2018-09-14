@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/mainPage/DetailPage.dart';
 import 'package:http/http.dart';
+import 'package:flutter_app/tools/UrlManage.dart' as UrlManage;
 
 
 class TabItemView extends StatefulWidget{
@@ -60,7 +61,7 @@ class TabItemState extends State<TabItemView>{
   }
 
   Future _getFoods() async{
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_foods_by_type.php?type=" + type.toString();
+    String url = UrlManage.getFoodsByTypeUrl(type);
     final response = await get(url);
     if(response.statusCode == 200){
       return json.decode(response.body);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/tools/UrlManage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -32,7 +33,7 @@ class OrderDetailState extends State<OrderDetailPage>{
   Future _getAddressList() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     int userId = sharedPreferences.getInt("userId");
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_address_list.php?user_id=" + userId.toString();
+    String url = getAddressListUrl(userId);
     var response = await http.get(url);
     if(response.statusCode == 200){
       return json.decode(response.body);
@@ -45,7 +46,7 @@ class OrderDetailState extends State<OrderDetailPage>{
   Future _addOrder(int cuisineId,int userId,int addressId,) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     int userId = sharedPreferences.getInt("userId");
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/get_address_list.php?user_id=" + userId.toString();
+    String url = getAddressListUrl(userId);
     var response = await http.get(url);
     if(response.statusCode == 200){
       return json.decode(response.body);

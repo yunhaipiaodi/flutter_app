@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/tools/UrlManage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,7 @@ class LoginState extends State<LoginPage>{
   String password = "";
 
   Future<Map<String,dynamic>> _checkLoginUser(String userName,String password) async{
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/check_login_user.php?user_name=$userName&password=$password";
+    String url = checkLoginUserUrl(userName,password);
     var response = await http.get(url);
     if(response.statusCode == 200){
       return json.decode(response.body);

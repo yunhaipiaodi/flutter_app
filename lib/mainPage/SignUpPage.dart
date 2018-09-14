@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/tools/UrlManage.dart';
 import 'package:http/http.dart' as http;
 
 class SignUpPage extends StatefulWidget{
@@ -18,7 +19,7 @@ class SignUpState extends State<SignUpPage>{
   String confirmPwd = "";
 
   Future<int> _checkUserNameExist(String userName) async{
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/check_user_register_state.php?user_name=$userName";
+    String url = checkUserNameExistUrl(userName);
     var response = await http.get(url);
     if(response.statusCode == 200){
       return int.parse(response.body);
@@ -29,7 +30,7 @@ class SignUpState extends State<SignUpPage>{
   }
 
   Future<Map> _register(String userName,String pwd) async{
-    String url = "http://yunhaipiaodi.gz01.bdysite.com/AppServer/php/user_register.php";
+    String url = registerUrl();
     Map postData = {
       'user_name':userName,
       'password':pwd,
