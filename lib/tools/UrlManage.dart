@@ -44,3 +44,7 @@ String registerUrl(){
   return _host + "php/user_register.php";
 }
 
+String addOrderUrl(){
+  return _host + "php/add_order.php";
+}
+

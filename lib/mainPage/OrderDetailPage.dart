@@ -43,16 +43,27 @@ class OrderDetailState extends State<OrderDetailPage>{
   }
 
   //add order to web
-  Future _addOrder(int cuisineId,int userId,int addressId,) async{
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    int userId = sharedPreferences.getInt("userId");
-    String url = getAddressListUrl(userId);
-    var response = await http.get(url);
-    if(response.statusCode == 200){
-      return json.decode(response.body);
-    }else{
-      throw Exception("getAddressList error,code:" + response.statusCode.toString());
+  Future<bool> _addOrder(int cuisineId,int addressId) async{
+    try{
+      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      int userId = await sharedPreferences.getInt("userId");
+      String url = addOrderUrl();
+      Map postData = {
+        "user_id":userId.toString(),
+        "cuisine_id":cuisineId.toString(),
+        "address_id":addressId.toString(),
+      };
+      var response = await http.post(url,body: postData);
+      if(response.statusCode == 200){
+        return true;
+      }else{
+        return false;
+      }
+    }catch(e){
+      print(e.toString());
+      return false;
     }
+
   }
 
   Widget _getAddressWidget(AddressMode addressMode){
@@ -113,8 +124,12 @@ class OrderDetailState extends State<OrderDetailPage>{
 
   @override
   Widget build(BuildContext context) {
+
+    int _addressId = 0;
+    GlobalKey<ScaffoldState> _scaffoldState = GlobalKey();
     // TODO: implement build
     return Scaffold(
+      key: _scaffoldState,
       appBar: AppBar(
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -145,6 +160,7 @@ class OrderDetailState extends State<OrderDetailPage>{
                         AddressMode obj = AddressMode.fromJson(map);
                         if(obj.selected == 1){
                           addressMode = obj;
+                          _addressId = obj.id;
                         }
                       });
                       return _getAddressWidget(addressMode);
@@ -297,7 +313,13 @@ class OrderDetailState extends State<OrderDetailPage>{
                   mainAxisAlignment: MainAxisAlignment.center,
                 ),
                 onPressed: (){
+                  _addOrder(1,1).then((bool result){
+                    if(result){
 
+                    }else{
+                      _scaffoldState.currentState.showSnackBar(SnackBar(content: Text("提交订单失败")));
+                    }
+                  });
                 },
               ),
               padding: const EdgeInsets.only(left: 16.0,right: 16.0),

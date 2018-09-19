@@ -35,7 +35,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - images/loading.png
     - images/meishi.jpg
   fonts:
     - family:         icomoon
