@@ -313,9 +313,9 @@ class OrderDetailState extends State<OrderDetailPage>{
                   mainAxisAlignment: MainAxisAlignment.center,
                 ),
                 onPressed: (){
-                  _addOrder(1,1).then((bool result){
+                  _addOrder(widget.cuisineId,_addressId).then((bool result){
                     if(result){
-
+                      Navigator.pushNamed(context, '/order_success');
                     }else{
                       _scaffoldState.currentState.showSnackBar(SnackBar(content: Text("提交订单失败")));
                     }

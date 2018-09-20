@@ -8,7 +8,6 @@ class Mine extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     List<String> mineItems = [
-      "我的订单",
       "我的钱包",
       "我的足迹",
       "联系客服",

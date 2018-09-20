@@ -48,3 +48,15 @@ String addOrderUrl(){
   return _host + "php/add_order.php";
 }
 
+String getOrderByTypeUrl(int orderType){
+  return _host + "php/get_order_by_type.php?type_id=$orderType";
+}
+
+String addCommendUrl(){
+  return _host + "php/add_commend.php";
+}
+
+String getCommendByCuisineIdpeUrl(int cuisineId){
+  return _host + "php/get_commend_by_cuisine_id.php?cuisine_id=$cuisineId";
+}
+

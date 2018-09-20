@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/mainPage/CommendPage.dart';
 import 'package:flutter_app/mainPage/LoginPage.dart';
 import 'package:flutter_app/mainPage/OrderDetailPage.dart';
 import 'package:flutter_app/tools/UrlManage.dart';
@@ -37,12 +38,22 @@ class DetailState extends State<DetailPage>{
     return hasLogin;
   }
 
-  Widget _getCommendItem(int index){
+  Future _getCommendList(int cuisineId) async {
+    String url = getCommendByCuisineIdpeUrl(cuisineId);
+    var response  = await http.get(url);
+    if(response.statusCode == 200){
+        return json.decode(response.body);
+    }else{
+      throw Exception("getCommendList net error");
+    }
+  }
+
+  Widget _getCommendItem(CommendData data){
     return Container(
       child: Row(
         children: <Widget>[
           Container(
-            child:CircleAvatar(backgroundImage: NetworkImage("http://a.hiphotos.baidu.com/zhidao/pic/item/21a4462309f79052782f28490ff3d7ca7bcbd591.jpg"),),
+            child:data.userAvatar != null?CircleAvatar(backgroundImage: NetworkImage(data.userAvatar),):Icon(Icons.person),
             margin: EdgeInsets.only(top:2.0),
           ),
           Expanded(
@@ -53,16 +64,16 @@ class DetailState extends State<DetailPage>{
                     child:Row(children: <Widget>[
                       Column(
                         children: <Widget>[
-                          Text("梅川内酷",style: TextStyle(fontSize: 18.0,),),
+                          Text(data.userName,style: TextStyle(fontSize: 18.0,),),
                           Container(
-                            child: Text("2018.08.29",style: TextStyle(fontSize: 12.0,color: Color.fromARGB(255, 158, 158, 158),),),
+                            child: Text(data.createTime,style: TextStyle(fontSize: 12.0,color: Color.fromARGB(255, 158, 158, 158),),),
                             margin: EdgeInsets.only(top:8.0),
                           ),
                         ],
                         crossAxisAlignment: CrossAxisAlignment.start,
                       ),
                       IconButton(
-                        icon:Icon(Icons.thumb_up,color: Colors.blue,),
+                        icon:Icon(Icons.thumb_up,color: data.thumbUp == 0?Colors.blue:Colors.white,),
                         onPressed: (){
 
                         },
@@ -76,7 +87,7 @@ class DetailState extends State<DetailPage>{
 
                   Container(
                     child:  Text(
-                      "这个菜好辣，好爽;一口气吃了三碗饭；不能吃辣的还是别轻易尝试；店家服务很好，服务小哥很帅",
+                      data.commendContent,
                     ),
                   ),
 
@@ -220,28 +231,52 @@ class DetailState extends State<DetailPage>{
                     ),
 
                     //comment list
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: 5,
-                        itemBuilder: (BuildContext context,int index) => _getCommendItem(1),
-                      ),
+                    FutureBuilder(
+                      future: _getCommendList(widget.cuisine_id),
+                      builder: (BuildContext context,AsyncSnapshot snapshot){
+                        // ignore: missing_enum_constant_in_switch
+                        switch(snapshot.connectionState){
+                          case ConnectionState.waiting:
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                            break;
+                          case ConnectionState.done:
+                            if(snapshot.hasData){
+                              List<dynamic> datas = snapshot.data;
+                              List<CommendData> commendDataList = List();
+                              datas.forEach((data){
+                                commendDataList.add(CommendData.fromJson(data));
+                              });
+                              return  Expanded(
+                                child: ListView.builder(
+                                  itemCount: commendDataList.length,
+                                  itemBuilder: (BuildContext context,int index) => _getCommendItem(commendDataList[index]),
+                                ),
+                              );
+                            }else{
+                              return Center(
+                                child: Text("还没有评论，快去评论吧"),
+                              );
+                            }
+                            break;
+                        }
+                      },
                     ),
+
                   ],
                 ),
                 bottomNavigationBar: Container(
-                  child: Row(children: <Widget>[
-                    IconButton(icon:Icon(Icons.thumb_up,color: Colors.white,),onPressed: (){
-
-                    },),
-                    Container(
+                  child: GestureDetector(
+                    child: Container(
                       width:300.0,
                       height:36.0,
                       child: Row(children: <Widget>[
                         Expanded(
-                            child:Text(
-                              "快来说说你的看法吧!",
-                              style: TextStyle(color: Color.fromARGB(255, 158, 158, 158)),
-                            ),
+                          child:Text(
+                            "快来说说你的看法吧!",
+                            style: TextStyle(color: Color.fromARGB(255, 158, 158, 158)),
+                          ),
                         ),
 
                       ],
@@ -251,10 +286,13 @@ class DetailState extends State<DetailPage>{
                         borderRadius: BorderRadius.all(Radius.circular(18.0)),
                       ),
                       padding: EdgeInsets.only(left: 16.0),
-                      ),
-                    ],
+                    ),
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context)=>CommendPage(cuisineData.id)));
+                    },
                   ),
                   color: Colors.blue,
+                  padding: EdgeInsets.only(top: 4.0,right:16.0,bottom: 4.0,left: 16.0),
                 ),
               );
               break;
@@ -278,6 +316,25 @@ class DetailState extends State<DetailPage>{
         },
     );
   }
+}
+
+class CommendData{
+  int id;
+  int thumbUp;
+  int isGoodCommend;
+  String commendContent;
+  String userName;
+  String userAvatar;
+  String createTime;
+
+  CommendData.fromJson(Map<String,dynamic> json):
+        id = int.parse(json["id"]),
+        thumbUp = int.parse(json["thumb_up"]),
+        isGoodCommend = int.parse(json["is_good_commend"]),
+        commendContent = json["commend_content"],
+        userName = json["user_name"],
+        userAvatar = json["user_avatar"],
+        createTime = json["create_time"];
 }
 
 class CuisineData{
